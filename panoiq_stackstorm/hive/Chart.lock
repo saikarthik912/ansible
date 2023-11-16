@@ -1,0 +1,6 @@
+dependencies:
+- name: hive-metastore
+  repository: ""
+  version: ~0.1.5
+digest: sha256:faa78c34386a7d1b39959400be46191bc808f3bb7d1911645b3b590eb21c1c67
+generated: "2022-08-29T14:17:47.278880117Z"

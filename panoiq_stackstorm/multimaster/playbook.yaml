@@ -1,0 +1,44 @@
+---
+
+- name: remove older networks
+  hosts: allServers
+  roles:
+   - remove_older_network
+
+
+- name: Config nfs Master
+  hosts: nfs_server
+  roles:
+   - nfs 
+
+- name: Setup Kubernetes Cluster
+  hosts: allServers
+  roles:
+    - kubernetes
+- name: Setup masters
+  hosts: masters
+  roles:
+    - masters
+- name: Remove toml
+  hosts: allexceptmaster1
+  roles:
+    - allexceptmaster1
+- name: Setup Master1
+  hosts: master1
+  roles:
+    - master1
+
+- name: Join Masters
+  hosts: masterjoin
+  roles:
+    - masterjoin
+
+- name: Join Workers
+  hosts: workerjoin
+  roles:
+    - workerjoin
+
+- name: Add nginx-ingress
+  hosts: master1 
+  roles:  
+    - nginx-ingress

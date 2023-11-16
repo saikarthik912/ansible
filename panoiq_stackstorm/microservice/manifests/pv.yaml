@@ -1,0 +1,171 @@
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: catalogs-create
+spec:
+  capacity:
+    storage: 7Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  claimRef:
+     name: catalogs-create
+     namespace: NAMESPACE
+  nfs:
+    path: /mnt/catalogs
+    server: "SERVER_IP"
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: airconnectors
+spec:
+  capacity:
+    storage: 7Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  claimRef:
+     name: airconnectors
+     namespace: NAMESPACE
+  nfs:
+    path: /mnt/airConnectors
+    server: "SERVER_IP"
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: aircsv
+spec:
+  capacity:
+    storage: 7Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  claimRef:
+     name: aircsv
+     namespace: NAMESPACE
+  nfs:
+    path: /mnt/aircsv
+    server: "SERVER_IP"
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dags
+spec:
+  capacity:
+    storage: 7Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  claimRef:
+     name: dags
+     namespace: NAMESPACE 
+  nfs:
+    path: /mnt/airdags
+    server: "SERVER_IP"
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: helm
+spec:
+  capacity:
+    storage: 7Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  claimRef:
+     name: helm
+     namespace: NAMESPACE
+  nfs:
+    path: /mnt/helm
+    server: "SERVER_IP"
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pinot-data-create
+spec:
+  capacity:
+    storage: 7Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  claimRef:
+     name: pinot-data-create
+     namespace: NAMESPACE 
+  nfs:
+    path: /mnt/pinot-data
+    server: "SERVER_IP"
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pinot-data-yaml-create
+spec:
+  capacity:
+    storage: 7Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  claimRef:
+     name: pinot-data-yaml-create
+     namespace: NAMESPACE
+  nfs:
+    path: /mnt/pinot-data-yaml
+    server: "SERVER_IP"
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: spark
+spec:
+  capacity:
+    storage: 7Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  claimRef:
+     name: spark
+     namespace: NAMESPACE
+  nfs:
+    path: /mnt/spark
+    server: "SERVER_IP"
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: upload
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  claimRef:
+     name: upload
+     namespace: NAMESPACE
+  nfs:
+    path: /mnt/upload
+    server: "SERVER_IP"
+    readOnly: false

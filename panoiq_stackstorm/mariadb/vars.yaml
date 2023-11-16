@@ -1,0 +1,4 @@
+image: mariadb
+namespace: tools
+secret: registry
+server_ip: 172.31.19.79

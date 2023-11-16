@@ -1,0 +1,36 @@
+- name: cnio down
+  command: sudo ip link set cni0 down 
+  ignore_errors: true
+
+- name: flannel down
+  command: sudo ip link set flannel.1 down 
+  ignore_errors: true
+
+- name: delete cnio
+  command: sudo ip link delete cni0   
+  ignore_errors: true
+
+- name: delete flannel
+  command: sudo ip link delete flannel.1
+  ignore_errors: true
+
+- name: Start and enable docker service
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: yes
+  ignore_errors: true
+
+- name: Start and enable kubelet service
+  ansible.builtin.systemd:
+    name: kubelet
+    state: started
+    enabled: yes
+  ignore_errors: true
+
+- name: Start and enable containerd service
+  ansible.builtin.systemd:
+    name: containerd
+    state: started
+    enabled: yes
+  ignore_errors: true    

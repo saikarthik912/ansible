@@ -1,0 +1,7 @@
+---
+  ref: panoiq_stackstorm
+  name: panoiq_stackstorm
+  description: tools installation for panoiq
+  version: 0.0.1
+  author: ranjit
+  email: ranjit.jadhav@iauro.com

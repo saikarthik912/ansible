@@ -1,0 +1,17 @@
+app_host: testproxy.passionbytes.io
+consume_mfe_image: gitlab.passionbytes.io:5050/panoiq/panoiq-consume-mfe:oct-3
+container_mfe_image: gitlab.passionbytes.io:5050/panoiq/panoiq-container-mfe:17d78bbb1feba6c02b7d94df04d7236797dac35b
+control_mfe_image: gitlab.passionbytes.io:5050/panoiq/panoiq-control-mfe:052d20d6d153dab7de7bafdbc0435e3f39db1c66
+create_mfe_image: gitlab.passionbytes.io:5050/panoiq/panoiq-create-mfe:9e4b18d021e57d79a82964cbf901550cc2af6d8b
+file_storage_image: gitlab.passionbytes.io:5050/panoiq/tools:file-storage-svc
+namespace: development
+oauth_authorization_url: https://testkeycloak.passionbytes.io/realms/Realm/protocol/openid-connect/auth
+oauth_client_id: masterClient
+oauth_client_secret: JQAJpEClFih6GiFEcgG8aWbJxSJTwcsE
+oauth_token_url: https://testkeycloak.passionbytes.io/realms/Realm/protocol/openid-connect/token
+oauth_user_profile: https://testkeycloak.passionbytes.io/realms/Realm/protocol/openid-connect/userinfo
+query_host: testquerybook.passionbytes.io
+secret: registry
+server_ip: 172.31.19.79
+tools_namespace: tools
+web_components_image: gitlab.passionbytes.io:5050/panoiq/panoiq-web-components:sprint-18-27

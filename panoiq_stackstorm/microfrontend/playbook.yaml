@@ -1,0 +1,116 @@
+- name: Installing keycloak
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+    - vars.yaml  
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../microfrontend
+        dest: /tmp/
+    - name: Replace Image in deployment
+      replace:
+        path: /tmp/microfrontend/manifests/deployment.yaml
+        regexp: "IMAGE_SECRET"
+        replace: "{{ secret }}" 
+    - name: Replace Web Components Image
+      replace:
+        path: /tmp/microfrontend/manifests/deployment.yaml
+        regexp: "WEB_COMPONENTS_IMAGE"
+        replace: "{{ web_components_image }}"
+    - name: Replace Container MFE Image
+      replace:
+        path: /tmp/microfrontend/manifests/deployment.yaml
+        regexp: "CONTAINER_MFE_IMAGE"
+        replace: "{{ container_mfe_image }}"
+    - name: Replace Control MFE Image
+      replace:
+        path: /tmp/microfrontend/manifests/deployment.yaml
+        regexp: "CONTROL_MFE_IMAGE"
+        replace: "{{ control_mfe_image }}"
+    - name: Replace Create MFE Image
+      replace:
+        path: /tmp/microfrontend/manifests/deployment.yaml
+        regexp: "CREATE_MFE_IMAGE"
+        replace: "{{ create_mfe_image }}"
+    - name: Replace Consume MFE Image
+      replace:
+        path: /tmp/microfrontend/manifests/deployment.yaml
+        regexp: "CONSUME_MFE_IMAGE"
+        replace: "{{ consume_mfe_image }}"
+    - name: Replace File Storage Image
+      replace:
+        path: /tmp/microfrontend/manifests/deployment.yaml
+        regexp: "FILE_STORAGE_IMAGE"
+        replace: "{{ file_storage_image }}"
+    - name: Replace Tools namespace
+      replace:
+        path: /tmp/microfrontend/manifests/deployment.yaml
+        regexp: "TOOLS_NAMESPACE"
+        replace: "{{ tools_namespace }}"
+        
+    - name: Replace Tools namespace
+      replace:
+        path: /tmp/microfrontend/manifests/deployment.yaml
+        regexp: "query1"
+        replace: "{{ oauth_user_profile }}"
+
+    - name: Replace Tools namespace
+      replace:
+        path: /tmp/microfrontend/manifests/deployment.yaml
+        regexp: "query2"
+        replace: "{{ oauth_token_url }}"
+
+
+    - name: Replace Tools namespace
+      replace:
+        path: /tmp/microfrontend/manifests/deployment.yaml
+        regexp: "query3"
+        replace: "{{ oauth_authorization_url }}"
+
+
+    - name: Replace Tools namespace
+      replace:
+        path: /tmp/microfrontend/manifests/deployment.yaml
+        regexp: "query4"
+        replace: "{{ oauth_client_secret }}"
+   
+    - name: Replace Tools namespace
+      replace:
+        path: /tmp/microfrontend/manifests/deployment.yaml
+        regexp: "query5"
+        replace: "{{ oauth_client_id }}"
+
+    #- name: Replace File Storage Image
+      #replace:
+        #path: /tmp/microfrontend/manifests/ingress.yaml
+        #regexp: "QUERY_HOST"
+        #replace: "{{ query_host }}"
+
+
+
+   
+    - name: Replace File Storage Image
+      replace:
+        path: /tmp/microfrontend/manifests/ingress.yaml
+        regexp: "APP_HOST"
+        replace: "{{ app_host }}"
+    - name: Replace Namespace in PV
+      replace:
+        path: /tmp/microfrontend/manifests/pv.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+    - name: Replace Namespace in PVC
+      replace:
+        path: /tmp/microfrontend/manifests/pvc.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+    - name: Replace Server IP in PVC
+      replace:
+        path: /tmp/microfrontend/manifests/pv.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+    - name: Deploy Microfrontend
+      command: kubectl apply -f /tmp/microfrontend/manifests -n {{ namespace }}
+      ignore_errors: yes

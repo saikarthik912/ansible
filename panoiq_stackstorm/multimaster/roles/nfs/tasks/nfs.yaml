@@ -1,0 +1,12 @@
+    - name: copy nfs directory
+      copy:
+        src: nfs.sh
+        dest: /tmp/
+        mode: 1777
+
+    - name: Install NFS
+      command: /tmp/nfs.sh
+      run_once: true
+      ignore_errors: yes
+      when: not added_nodes
+

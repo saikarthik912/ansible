@@ -1,0 +1,11 @@
+docker_username: root
+docker_password: Op56-12=44
+docker_registry: gitlab.passionbytes.io:5050
+docker_secret_name: registry
+namespaces:
+  - tools
+  - development
+  - production
+  - staging
+  - monitoring
+  - logging

@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hive.fullname" . }}-hiveserver
+  labels:
+    app.kubernetes.io/name: {{ include "hive.name" . }}
+    app.kubernetes.io/component: server
+    {{- include "hive.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "hive.name" . }}
+      app.kubernetes.io/component: server
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+  serviceName: {{ include "hive.fullname" . }}-hiveserver
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "hive.name" . }}
+        app.kubernetes.io/component: server
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    spec:
+      containers:
+      - name: server
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        command:
+          - /bin/bash
+          - /opt/hive/conf/startup.sh
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        #readinessProbe:
+          #httpGet:
+            #path: /
+            #port: 10002
+          #initialDelaySeconds: 5
+          #timeoutSeconds: 2
+        #livenessProbe:
+          #httpGet:
+            #path: /
+            #port: 10002
+          #initialDelaySeconds: 10
+          #timeoutSeconds: 2
+        volumeMounts:
+        - name: hive-config
+          mountPath: /opt/hive/conf
+        - name: hadoop-config
+          mountPath: /opt/hadoop/etc/hadoop
+      volumes:
+      - name: hive-config
+        configMap:
+          name: {{ include "hive.fullname" . }}-hive-hive-config
+      - name: hadoop-config
+        configMap:
+          {{- if .Values.conf.hadoopConfigMap }}
+          name: {{ .Values.conf.hadoopConfigMap }}
+          {{- else }}
+          name: {{ include "hive.fullname" . }}-hive-hadoop-config
+          {{- end }}
+
+      imagePullSecrets:
+      - name: registry
+
+

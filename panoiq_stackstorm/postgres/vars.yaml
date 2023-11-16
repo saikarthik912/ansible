@@ -1,0 +1,4 @@
+image: gitlab.passionbytes.io:5050/panoiq/tools:postgres10.1
+namespace: tools
+secret: registry
+server_ip: 172.31.19.79

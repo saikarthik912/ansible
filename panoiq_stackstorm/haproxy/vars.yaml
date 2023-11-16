@@ -1,0 +1,7 @@
+domain: passionbytes
+server_ip: 172.31.27.72
+ingress_https_port: 30994
+ingress_http_port: 31708
+haproxy_cfg: '"testkeycloak testtrino testminio testairflow testranger app app-https testkibana testquerybook" "testproxy" "app-https 172.31.27.72 30994"  "app 172.31.27.72 31708" "testkeycloak 172.31.27.72  32001" "testkeycloak 172.31.25.248 32001"  "testtrino 172.31.27.72 32001" "testminio 172.31.27.72 32005" "testairflow 172.31.27.72 31387" "testranger 172.31.27.72 32448 testkibana 172.31.27.72 32484 testquerybook 172.31.27.72  32013"' 
+letsencrypt_cfg: -d testproxy.passionbytes.io -d testkeycloak.passionbytes.io -d testtrino.passionbytes.io -d testminio.passionbytes.io -d testairflow.passionbytes.io -d testranger.passionbytes.io -d testkibana.passionbytes.io -d testquerybook.passionbytes.io 
+letsencrypt_domain: testproxy.passionbytes.io 

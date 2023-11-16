@@ -1,0 +1,10 @@
+- name: Installing kafka
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  tasks:
+    - name: Set cgroup driver as systemd
+      copy:	
+        src: ../kafka 
+        dest: /tmp/
+

@@ -1,0 +1,81 @@
+- name: Installing opensearch-dashboards
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+   - vars.yaml
+  tasks:
+    - name: copy directory
+      copy:	
+        src: ../opensearch-dashboards 
+        dest: /tmp/
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch-dashboards/values.yaml
+        regexp: "OPENSEARCH_DASHBOARDS_OPENSEARCHHOST"
+        replace: "{{ opensearch_dashboards_opensearchhost }}"
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch-dashboards/values.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch-dashboards/values.yaml
+        regexp: "OPENSEARCH_DASHBOARDS_OPENSEARCHPORT"
+        replace: "{{ opensearch_dashboards_opensearchport }}"
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch-dashboards/values.yaml
+        regexp: "OPENSEARCH_DASHBOARDS_REPOSITORY"
+        replace: "{{ opensearch_dashboards_repository }}"
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch-dashboards/values.yaml
+        regexp: "OPENSEARCH_DASHBOARDS_TAG"
+        replace: "{{ opensearch_dashboards_tag }}"
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch-dashboards/values.yaml
+        regexp: "OPENSEARCH_USERNAME"
+        replace: "{{ opensearch_username }}"
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch-dashboards/values.yaml
+        regexp: "OPENSEARCH_PASSWORD"
+        replace: "{{ opensearch_password }}"
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch-dashboards/values.yaml
+        regexp: "OPENSEARCH_DASHBOARDS_OPENID_CONNECT_URL"
+        replace: "{{ opensearch_dashboards_openid_connect_url }}"
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch-dashboards/values.yaml
+        regexp: "OPENSEARCH_DASHBOARDS_OPENID_CLIENT_ID"
+        replace: "{{ opensearch_dashboards_openid_client_id }}"
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch-dashboards/values.yaml
+        regexp: "OPENSEARCH_DASHBOARDS_OPENID_CLIENT_SECRET"
+        replace: "{{ opensearch_dashboards_openid_client_secret }}"    
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch-dashboards/values.yaml
+        regexp: "OPENSEARCH_DASHBOARDS_OPENID_BASE_REDIRECT_URL"
+        replace: "{{ opensearch_dashboards_openid_base_redirect_url }}"
+
+    - name: Installing opensearch-dashboards using helm
+      command: helm install opensearch-dashboards  /tmp/opensearch-dashboards -n "{{ namespace }}"
+

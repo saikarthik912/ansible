@@ -1,0 +1,25 @@
+---
+  name: "test"
+  runner_type: "python-script"
+  description: "execute python script"
+  enabled: true
+  entry_point: "test.py"
+  parameters:
+     type:
+        type: "string"
+        description: "type"
+        required: true
+        position: 0
+     timeout:
+        type: "integer"
+        default: 600
+  output_schema:
+     result:
+        type: "string"
+        required: true
+     version:
+        type: string
+        required: true
+     executable:
+        type: string
+        required: true

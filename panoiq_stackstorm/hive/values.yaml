@@ -1,0 +1,29 @@
+image:
+  repository: "HIVE_IMAGE_REPOSITORY"
+  tag: "HIVE_IMAGE_TAG"
+  secret: "HIVE_IMAGE_SECRET"
+#  pullPolicy: Always
+
+resources: { }
+
+# Also deploy an internal postgresql hive-metastore requirement
+hive-metastore:
+  enabled: true
+  postgresql:
+    enabled: false
+    host: postgres.tools
+    port: 5432
+    auth:
+      database: "HIVE_DATABASE"
+      username: "HIVE_USERNAME"
+      password: "HIVE_PASSWORD"
+
+conf:
+  logLevel: INFO
+  hiveSite: {}
+  # if not set, default hive.metastore.uris is default uri from metastore requirement:
+  # "thrift://{{.Release.Name}}-metastore:9083"
+  # hive.metastore.warehouse.dir: hdfs://my-hdfs.bigdata.svc.cluster.local:9820/user/hive/warehouse
+  hdfsAdminUser: hdfs
+  # if not set, default is configMap from hdfs requirement {{.Release.Name}}-hdfs-hadoop
+  hadoopConfigMap: ~

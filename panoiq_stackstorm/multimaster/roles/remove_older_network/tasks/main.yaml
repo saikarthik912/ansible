@@ -1,0 +1,4 @@
+- name: remove older network
+  become: yes
+  become_user: ec2-user
+  import_tasks: remove-networks.yaml

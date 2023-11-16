@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: kafka 
+spec:
+  capacity:
+    storage: 10Gi 
+  accessModes:
+    - ReadWriteMany 
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  claimRef:
+     namespace: "NAMESPACE" 
+     name: data-kafka-0
+  nfs: 
+    path: /mnt/kafkadeploy
+    server: "SERVER_IP"
+    readOnly: false
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: kafka-zoo
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  claimRef:
+     namespace: "NAMESPACE"
+     name: data-kafka-zookeeper-0
+  nfs:
+    path: /mnt/kafkadeploy-zoo
+    server: "SERVER_IP"
+    readOnly: false
+

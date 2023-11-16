@@ -1,0 +1,47 @@
+- name: Install helm
+  become: true
+  become_user: ec2-user
+  command: wget https://get.helm.sh/helm-v3.12.2-linux-amd64.tar.gz
+
+- name: Install helm
+  become: true
+  become_user: ec2-user
+  command: tar -xvf helm-v3.12.2-linux-amd64.tar.gz
+
+- name: Install helm
+  become: true
+  become_user: ec2-user
+  command: sudo  cp -r linux-amd64/helm /usr/bin/
+
+- name: Install helm
+  become: true
+  become_user: ec2-user
+  command: sudo  chmod +x /usr/bin/helm
+
+- name: copy directory
+  copy:
+    src: namespace.yaml
+    dest: /tmp/
+
+- name: copy directory
+  copy:
+    src: ingress-nginx 
+    dest: /tmp/
+
+
+- name: Create namespaces
+  become: true
+  become_user: ec2-user
+  command: kubectl apply -f /tmp/namespace.yaml
+
+- name: Install nginx controller
+  become: true
+  become_user: ec2-user
+  #command: helm upgrade --install ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx --namespace ingress-nginx --create-namespace --set controller.service.type=NodePort
+  command: helm install ingress-nginx  /tmp/ingress-nginx --namespace ingress-nginx --create-namespace
+  when: not added_nodes 
+
+- name: delete pods nginx controller
+  become: true
+  become_user: ec2-user
+  command: kubectl delete pods --all -n ingress-nginx 

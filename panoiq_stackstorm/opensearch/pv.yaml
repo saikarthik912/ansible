@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfspv-os1-elk
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  #claimRef:
+  #namespace: development
+  #name: nfspvc-opensearch
+  nfs:
+    path: /mnt/osdata1
+    server: 172.31.22.109
+    readOnly: false
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfspv-os2-elk
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  #claimRef:
+  #namespace: development
+  #name: nfspvc-opensearch
+  nfs:
+    path: /mnt/osdata2
+    server: 172.31.22.109
+    readOnly: false
+
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfspv-os3-elk
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  #claimRef:
+  #namespace: development
+  #name: nfspvc-opensearch
+  nfs:
+    path: /mnt/osdata3
+    server: 172.31.22.109
+    readOnly: false
+

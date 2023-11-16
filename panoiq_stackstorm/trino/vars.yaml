@@ -1,0 +1,6 @@
+host: testtrino.passionbytes.io
+namespace: tools
+secret: registry
+server_ip: 172.31.19.79
+trino_image_repository: gitlab.passionbytes.io:5050/panoiq/tools
+trino_image_tag: trino-ansible-newv1

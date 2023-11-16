@@ -1,0 +1,7 @@
+domain: passionbytes
+server_ip: 3.21.32.0
+ingress_https_port: 31174
+ingress_http_port: 31490
+haproxy_cfg: '"testkeycloak testtrino testminio"  "app-https 172.31.27.72 31174" "app 172.31.27.72 31490" "testkeycloak 172.31.27.72 32001" "testtrino 172.31.27.72 32004" "testminio 172.31.27.72 32005"' 
+letsencrypt_cfg: '-d testproxy.passionbytes.io -d testkeycloak.passionbytes.io' 
+letsencrypt_domain: passionbytes.io

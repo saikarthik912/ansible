@@ -1,0 +1,740 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow-service
+  template:
+    metadata:
+      labels:
+        app: airflow-service
+    spec:
+      containers:
+        - name: airflow-service
+          image: AIRFLOW_SERVICE_IMAGE
+          env:
+          - name: _JAVA_OPTIONS
+            value: -Xmx512m -Xms256m
+          #- name: SPRING_PROFILES_ACTIVE
+            #value: "staging,api-docs"
+          - name: SPRING_DATA_MONGODB_URI
+            value: mongodb://root:root@mongodb-svc.TOOLS_NAMESPACE.svc:27017
+          - name: SPRING_DATA_MONGODB_DATABASE
+            value: airflowservice
+          - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER-URI
+            value: KEYCLOAK_HOST/realms/PanoIQ
+          - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT-ID
+            value: masterClient
+          - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT-SECRET
+            value: tGgx9Y5cbXFSbnREpUEp0KIp7dVVApDr
+          - name: RBACSERVICE_URL
+            value: "http://rbac-service.SERVICE_NAMESPACE.svc:33005"
+          - name: AIRFLOW-API-URL
+            value: AIRFLOW_HOST/api
+          - name: AIRFLOW-API-CREDENTIALS_USER
+            value: admin
+          - name: AIRFLOW-API-CREDENTIALS_PASSWORD
+            value: admin
+          #- name: ENV_VAR
+            #value: staging
+          imagePullPolicy: "Always"
+          ports:
+            - containerPort: 32219
+          #resources:
+          #  requests:
+          #    cpu: "100m"
+          #    memory: "512Mi"
+          #  limits:
+          #    cpu: "100m"
+          #    memory: "512Mi"
+          
+          
+      
+
+   
+      imagePullSecrets:
+      - name: SECRET
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: control-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: control-service
+  template:
+    metadata:
+      labels:
+        app: control-service
+    spec:
+      containers:
+        - image: CONTROL_SERVICE_IMAGE
+          name: control-service
+          env:
+          # - name: ENV_VAR
+          #   value: staging
+          # - name: SPRING_PROFILES_ACTIVE
+          #   value: "staging,api-docs"
+          #- name: _JAVA_OPTIONS
+            #value: -Xmx1024m -Xms512m
+          - name: SPRING_DATA_MONGODB_URI
+            value: mongodb://root:root@mongodb-svc.TOOLS_NAMESPACE.svc:27017
+          - name: SPRING_DATA_MONGODB_DATABASE
+            value: controlservice
+          - name: RBACSERVICE_URL
+            value: http://rbac-service-staging.SERVICE_NAMESPACE.svc:34005
+          - name: KEYCLOAK_REALM
+            value: PanoIQ
+          - name: KEYCLOAK_RESOURCE
+            value: masterClient
+          - name: KEYCLOAK_AUTH_SERVER_URL
+            value: KEYCLOAK_HOST
+          imagePullPolicy: "Always"
+          ports:
+            - containerPort: 35014
+          #resources:
+            #requests:
+              #cpu: "100m"
+              #memory: "512Mi"
+            #limits:
+              #cpu: "100m"
+              #memory: "512Mi"
+
+      imagePullSecrets:
+      - name: "SECRET"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: create-service
+  #namespace: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: create-service
+  template:
+    metadata:
+      labels:
+        app: create-service
+    spec:
+      containers:
+        - name: create-service
+
+
+          image: CREATE_SERVICE_IMAGE
+          imagePullPolicy: "Always"
+          ports:
+            - containerPort: 34004
+          resources:
+            #requests:
+              #cpu: "100m"
+              #memory: "512Mi"
+            #limits:
+              #cpu: "100m"
+              #memory: "512Mi"
+          env:
+            - name: ENV_VAR
+              value: NODE_ENV_VAR
+            # - name: SPRING_PROFILES_ACTIVE
+            #   value: "staging,api-docs"
+            - name: SPRING_DATA_MONGODB_URI
+              value: mongodb://root:root@mongodb-svc.TOOLS_NAMESPACE.svc:27017
+            - name: SPRING_DATA_MONGODB_DATABASE
+              value: createservice
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER-URI
+              value: KEYCLOAK_HOST/realms/PanoIQ
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT-ID
+              value: masterclient
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT-SECRET
+              value: 1KGq6EvL4HRk50u2EwKmMG3UnRZ7K1eq
+            - name: CHATGPT_URL
+              value: CHATGPT_HOST
+            - name: CHATGPT_MODEL
+              value: text-davinci-003
+            - name: CHATGPT_TEMPERATURE
+              value: "0.7"
+            - name: CHATGPT_MAXTOKEN
+              value: "256"
+            - name: CHATGPT_APIKEY
+              value: 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
+            - name: SERVICE-URL_AIRFLOW-SERVICE-DAGRUNNING-URL
+              value: "http://airflow-service.SERVICE_NAMESPACE.svc:32219/api/airflow-api/dagrunning"
+            - name: SERVICE-URL_AIRFLOW-SERVICE-SAVE-DAG-URL
+              value: "http://airflow-service.SERVICE_NAMESPACE.svc:32219/api/airflow-api/save-dag"
+            - name: SERVICE-URL_AIRFLOW-SERVICE-PAUSE-DAG-URL
+              value: "http://airflow-service.SERVICE_NAMESPACE.svc:32219/api/airflow-api/dag/dag-pause"
+            - name: SERVICE-URL_AIRFLOW-SERVICE-ACTIVATE-DAG-URL
+              value: "http://airflow-service.SERVICE_NAMESPACE.svc:32219/api/airflow-api/dag/dag-activate"
+            - name: SERVICE-URL_AIRFLOW-SERVICE-ISACTIVE-DAG-URL
+              value: "http://airflow-service.SERVICE_NAMESPACE.svc:32219/api/airflow-api/dag/is-active"
+            - name: SERVICE-URL_AIRFLOW-SERVICE-LIST-DAG-URL
+              value: "http://airflow-service.SERVICE_NAMESPACE.svc:32219/api/airflow-api/list-dags"
+            - name: SERVICE-URL_AIRFLOW-SERVICE-DELETE-DAG-URL
+              value: "http://airflow-service.SERVICE_NAMESPACE.svc:32219/api/airflow-api/dag/delete"
+            - name: NOTIFICATIONSERVICE_URL
+              value:  http://panoiq-notification.SERVICE_NAMESPACE.svc:55205
+            - name: NOTIFICATIONSERVICE_NODEMAILERURL
+              value:  http://panoiq-nodemailer-service.SERVICE_NAMESPACE.svc:30022/email-nodemailer/send
+            - name: NOTIFICATIONSERVICE_SENDEREMAIL
+              value: alerts.panoiq@Passionbytes.in
+            - name: NOTIFICATIONSERVICE_SENDERPASSWORD
+              value: Mumbai@1234
+            - name: SERVICE-URL_MINIO-SERVICE-UPLOAD-FILE-URL
+              value: "http://minio-service.SERVICE_NAMESPACE:32024/api/minio-api-resource/file-upload"
+            - name: AIRFLOW-API-CREDENTIALS_USER
+              value: admin
+            - name: AIRFLOW-API-CREDENTIALS_PASSWORD
+              value: admin
+            - name: DOCUMENT_CSV-DIRECTORY
+              value: csv-directory
+            - name: DOCUMENT_AIRFLOW-UPLOAD-DIRECTORY
+              value: airflow-dags
+            - name: DOCUMENT_FILE-UPLOAD-DIRECTORY
+              value: upload-directory
+            - name: RBACSERVICE_URL
+              value: http://rbac-service-staging.SERVICE_NAMESPACE.svc:34005
+            - name: ADMIN_EMAIL
+              value: sameer.narkhede@Passionbytes.in
+            - name: DAGOWNER
+              value: panoiq
+            - name: DOCUMENT_PINOT-DATA
+              value: pinot-data
+            - name: DOCUMENT_PINOT-DATA-YAML
+              value: pinot-data-yaml
+            - name: SERVICE-URL_AIRFLOW-SERVICE-DAG-STATUS
+              value: "http://airflow-service.SERVICE_NAMESPACE.svc:32219/api/airflow-api/dag/status"
+            - name: DOCUMENT_TRINO-CATALOG
+              value: catalogs
+            - name: DOCUMENT_TRINO-CATALOG-BKP
+              value: catalogsbkp  
+            - name: KUBERNATESDETAILS_URL
+              value: https://65.1.6.222:6443
+            - name: KUBERNATESDETAILS_KEY
+              value: eyJhbGciOiJSUzI1NiIsImtpZCI6IjIyVmp1ZHZEUTdIQkRtWVBKQV9ncHk5TV94bEI5eWtjeGw5TWtQcFQzZ0EifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6InN5c3RlbS1zZWNyZXQtdG9rZW4iLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjZkZTk5ZjQxLWYwOWUtNGYwOC04NzgxLTlhNDg2YmZlMzVmOCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.CrKL3s3C7RLfVBeSD2KQEsJHBgK_PxqKnVGNnxnh1zm9CjyTf9OwhXIRjWVQWHmD64fjbwD9INmHDiEIGt0wgBak1OewKS4oYHXsCJVohWl72uzq25vPDarERudEMeQSjBp5ijHeif_eqkQ8KEEiVePnRHj6mS4CPuOqkKS8JG8JRaP86sK9ZV5CZIMyqpNmg5wN8o5ePLaH-XBrNcHeL1ZBFKLtjwpmS3AmtlTtiEjYlJ7BRM07qco2V-Wu-vSSdsuPxk_mye3bLdc1YzIfb0tZ7an1OtQio1xe48vn9SoK_ssZCDAGxYH4yuQ3FIWfu1YkTXIM72DrPFTlrLr-_w
+            - name: KUBERNATESDETAILS_NAMESPACE
+              value: NAMESPACE
+            - name: KUBERNATESDETAILS_TRINOPOD
+              value: trinomini-staging
+            - name: KUBERNATESDETAILS_PINOTHOST
+              value: "pinot-controller-0.pinot-controller-headless.TOOLS_NAMESPACE.svc.cluster.local"
+            - name: KUBERNATESDETAILS_PINOTPORT
+              value: "9000"
+            - name: OPENSEARCH_HOST
+              value: "https://opensearch-cluster-master.TOOLS_NAMESPACE:9200"
+            - name: OPENSEARCH_USER
+              value: admin
+            - name: OPENSEARCH_PASS
+              value: admin
+
+          volumeMounts:
+            - mountPath: /airflow-dags/
+              name: create-dags
+
+            - mountPath: /csv-directory/
+              name: create-csv
+
+            - mountPath: /air-connectors/
+              name: create-connectors
+             
+            - mountPath: /pinot-data/
+              name: pinot-data
+
+            - mountPath: /pinot-data-yaml/
+              name: pinot-data-yaml
+ 
+          
+            - mountPath: /air-spark/
+              name: create-spark               
+
+
+            - mountPath: /upload-directory/
+              name: upload
+             
+            - mountPath: /helm/
+              name: helm
+
+            - mountPath: /catalogsbkp/
+              name: catalogsbkp 
+
+            - mountPath: /catalogs/
+              name: catalogs-create
+
+
+      volumes:
+
+        - name: catalogsbkp
+          persistentVolumeClaim:
+            claimName: catalogsbkp
+
+        - name: catalogs-create
+          persistentVolumeClaim:
+            claimName: catalogs-create
+            
+
+         
+        - name: create-dags
+          persistentVolumeClaim:
+            claimName: dags
+
+        - name: pinot-data-create
+          persistentVolumeClaim:
+            claimName: pinot-data-create
+
+        - name: pinot-data-yaml-create
+          persistentVolumeClaim:
+            claimName: pinot-data-yaml-create
+
+ 
+
+        - name: upload
+          persistentVolumeClaim:
+            claimName: upload
+            
+        - name: helm
+          persistentVolumeClaim:
+            claimName: helm
+
+        - name: create-csv
+          persistentVolumeClaim:
+            claimName: aircsv
+
+        - name: create-connectors
+          persistentVolumeClaim:
+            claimName: airconnectors
+         
+        - name: create-spark
+          persistentVolumeClaim:
+            claimName: spark         
+              
+      imagePullSecrets:
+      - name: "SECRET"
+---
+  apiVersion: "apps/v1"
+  kind: "Deployment"
+  metadata: 
+    name: "file-service"
+    # namespace: "staging"
+  spec: 
+    selector: 
+      matchLabels: 
+        app: "file-service"
+    replicas: 1
+    strategy: 
+      type: "RollingUpdate"
+      rollingUpdate: 
+        maxSurge: 1
+        maxUnavailable: 1
+    minReadySeconds: 5
+    template: 
+      metadata: 
+        labels: 
+          app: "file-service"
+      spec: 
+        containers: 
+          - 
+            name: "file-service"
+            image: FILE_SERVICE_IMAGE
+            imagePullPolicy: "Always"
+            ports: 
+              - 
+                containerPort: 30013
+            resources: 
+              requests: 
+                cpu: "100m"
+                memory: "512Mi"
+              limits: 
+                cpu: "100m"
+                memory: "512Mi"
+            env:
+            - name: TCP_PORT
+              value: "30013"
+            - name: MONGO_CONNECTION_STRING
+              value: mongodb://root:root@mongodb-svc.TOOLS_NAMESPACE:27017/filesDb-staging?authSource=admin
+            - name: SWAGGER_TITLE
+              value: File-service
+            - name: SWAGGER_DESC
+              value: The File service api description
+            - name: SWAGGER_VERSION
+              value: "1.0"
+            - name: SWAGGER_TAG
+              value: ""
+            - name: SWAGGER_BASEPATH
+              value: ""
+            - name: APP_BASEPATH
+              value: "file-service"  
+            - name: SWAGGER_DOC_PATH
+              value: file-service/api
+            - name: AWS_S3_BUCKET
+              value: filesdb1
+            - name: AWS_S3_ACCESS_KEY
+              value: "minio"
+            - name: AWS_S3_KEY_SECRET
+              value: "minoi123"
+            - name: AWS_PRIVATE_S3_BUCKET
+              value: filesdb2
+            - name: AWS_REGION
+              value: ap-south-1 
+              
+            - name: USER_LEVEL_ACCESS 
+              value: "true"
+            - name: PRIVATE_FILE_EXPIRY_TIME
+              value: "180"
+              
+              
+            - name: RBAC_GRPC_URL
+              value: rbac
+            - name: RBAC_GRPC_PORT
+              value: "30104"  
+              
+        
+        imagePullSecrets: 
+        - name: "SECRET"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio-service
+  # namespace: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio-service
+  template:
+    metadata:
+      labels:
+        app: minio-service
+    spec:
+      containers:
+        - name: minio-service-staging
+          image: MINIO_SERVICE_IMAGE
+          env:
+          - name: SPRING_DATA_MONGODB_URI
+            value: mongodb://root:root@mongodb-svc.TOOLS_NAMESPACE:27017
+          - name: SPRING_DATA_MONGODB_DATABASE
+            value: minioservice
+          - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI
+            value: KEYCLOAK_HOST/realms/PanoIQ
+          - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT-ID
+            value: masterClient
+          - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT-SECRET
+            value: tGgx9Y5cbXFSbnREpUEp0KIp7dVVApDr
+          - name: RBACSERVICE_URL
+            value: "http://rbac-service.SERVICE_NAMESPACE.svc:33005"
+          - name: MINIO_ACCESS_NAME
+            value: minio
+          - name: MINIO_ACCESS_SECRET
+            value: minio123
+          - name: MINIO_ACCESS_URL
+            value: http://minio-svc.TOOLS_NAMESPACE:30625
+          # - name: ENV_VAR
+          #   value: staging
+          imagePullPolicy: "Always"
+          ports:
+            - containerPort: 32024
+          #resources:
+          #  requests:
+          #    cpu: "100m"
+          #    memory: "512Mi"
+          #  limits:
+          #    cpu: "100m"
+          #    memory: "512Mi"
+      imagePullSecrets:
+      - name: SECRET
+---
+  apiVersion: "apps/v1"
+  kind: "Deployment"
+  metadata: 
+    name: "panoiq-nodemailer-service"
+    # namespace: "staging"
+  spec: 
+    selector: 
+      matchLabels: 
+        app: "panoiq-nodemailer-service"
+    replicas: 1
+    strategy: 
+      type: "RollingUpdate"
+      rollingUpdate: 
+        maxSurge: 1
+        maxUnavailable: 1
+    minReadySeconds: 5
+    template: 
+      metadata: 
+        labels: 
+          app: "panoiq-nodemailer-service"
+      spec: 
+        containers: 
+          - 
+            name: "panoiq-nodemailer-service"
+            image: NODEMAILER_IMAGE
+            imagePullPolicy: "Always"
+            ports: 
+              - 
+                containerPort: 30022
+            resources: 
+              requests: 
+                cpu: "100m"
+                memory: "512Mi"
+              limits: 
+                cpu: "100m"
+                memory: "512Mi"
+            env:
+            - name: TCP_PORT
+              value: "30022"
+            - name: LOCAL_URL
+              value: "0.0.0.0"
+            - name: GRPC_PORT
+              value: "30023"
+            - name: GRPC_HOST
+              value: localhost 
+            - name: SWAGGER_TITLE
+              value: Nodemailer Provider Service API Documenatation
+            - name: SWAGGER_DESC
+              value: This documentation is for the GRPC and REST APIs
+            - name: SWAGGER_VERSION
+              value: "1.0"
+            - name: SWAGGER_TAG
+              value: Nodemailer
+            - name: SWAGGER_BASEPATH
+              value: ""
+            - name: SWAGGER_DOC_PATH
+              value: email-nodemailer/api
+            - name: STATIC
+              value: "false"
+            - name: EMAIL_SENDER
+              value: 
+            - name: EMAIL_PASSWORD
+              value: 
+            - name: PROVIDER
+              value: 
+            - name: APP_BASEPATH
+              value:  
+            - name: RBAC_GRPC_URL
+              value: ""
+            - name: RBAC_GRPC_PORT
+              value: ""
+            - name: FILE_SERVICE_URL
+              value: https://file-service.SERVICE_NAMESPACE:30013/file-service/files    
+            - name: RBAC_URL
+              value: http://rbac-service-staging.SERVICE_NAMESPACE.svc.cluster.local:34005
+
+
+        imagePullSecrets: 
+          - name: "SECRET"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rbac
+  # namespace: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rbac
+  template:
+    metadata:
+      labels:
+        app: rbac
+    spec:
+      containers:
+        - name: rbac-service
+          image: RBAC_SERVICE_IMAGE
+          imagePullPolicy: "Always"
+          ports:
+            - containerPort: 34005
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "512Mi"
+            limits:
+              cpu: "100m"
+              memory: "512Mi"
+          env:
+            - name: ENV_VAR
+              value: NODE_ENV_VAR
+            - name: _JAVA_OPTIONS
+              value: -Xmx2048m -Xms256m
+            - name: CONFIG-PROPERTIES_TENANT_REALM
+              value: PanoIQ
+            - name: CONFIG-PROPERTIES_TENANT_NAME
+              value: masterClient
+            - name: CONFIG-PROPERTIES_KC_URL
+              value: KEYCLOAK_HOST
+            - name: CONFIG-PROPERTIES_KC_USERNAME
+              value: admin
+            - name: CONFIG-PROPERTIES_KC_PASSWORD
+              value: admin
+            - name: SPRING_DATA_MONGODB_URI
+              value: mongodb://root:root@mongodb-svc.TOOLS_NAMESPACE.svc:27017
+            - name: SPRING_DATA_MONGODB_DATABASE
+              value: rbacservice
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER-URI
+              value: KEYCLOAK_HOST/realms/PanoIQ
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT-ID
+              value: masterClient
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT-SECRET
+              value: tGgx9Y5cbXFSbnREpUEp0KIp7dVVApDr
+            # - name: SPRING_PROFILES_ACTIVE
+            #   value: "staging,api-docs"
+
+      imagePullSecrets:
+      - name: SECRET
+---
+  apiVersion: "apps/v1"
+  kind: "Deployment"
+  metadata: 
+    name: "panoiq-notification"
+    # namespace: "staging"
+  spec: 
+    selector: 
+      matchLabels: 
+        app: "panoiq-notification"
+    replicas: 1
+    strategy: 
+      type: "RollingUpdate"
+      rollingUpdate: 
+        maxSurge: 1
+        maxUnavailable: 1
+    minReadySeconds: 5
+    template: 
+      metadata: 
+        labels: 
+          app: "panoiq-notification"
+      spec: 
+        containers: 
+          - 
+            name: "panoiq-notification"
+            image: "NOTIFICATION_IMAGE"
+            imagePullPolicy: "Always"
+            ports: 
+              - 
+                containerPort: 55205
+            resources: 
+              requests: 
+                cpu: "100m"
+                memory: "512Mi"
+              limits: 
+                cpu: "100m"
+                memory: "512Mi"
+            env:
+            - name: MONGO_CONNECTION_STRING
+              value: mongodb://root:root@mongodb-svc-v2.TOOLS_NAMESPACE:27017/notificationDb-staging?authSource=admin
+            - name: DB_USER
+              value: root
+            - name: DB_PASSWORD
+              value: root
+            - name: SWAGGER_TITLE
+              value:  notification
+            - name: SWAGGER_DESC
+              value: The Notification service api description
+            - name: SWAGGER_VERSION
+              value: "1.0"
+            - name: SWAGGER_TAG
+              value: Notifications
+            - name: SWAGGER_BASEPATH
+              value: ""      
+            - name: SWAGGER_DOC_PATH 
+              value: "/panoiq-notifications/api" 
+            - name: PORT
+              value: "55205"
+            - name: APP_BASEPATH
+              value: panoiq-notifications
+            - name: RBAC_GRPC_URL
+              value: "http://rbac-service.SERVICE_NAMESPACE.svc:33005/api/access-control"
+            - name: RBAC_GRPC_PORT
+              value: "33005"
+            - name: "TCP_PORT"
+              value: "55205"
+            - name: "GRPC_HOST"
+              value: "0.0.0.0"
+            - name: GRPC_PORT
+              value: "30111"
+            - name: "MONGO_HOST"
+              value: "mongodb-svc.TOOLS_NAMESPACE"
+            - name: "MONGO_PORT"
+              value: "27017"
+            - name: "MONGO_USER"
+              value: "root"
+            - name: "MONGO_PASS"
+              value: "root"
+            - name: "MONGO_DBNAME"
+              value: "notificationDb-staging"
+            - name: "MONGO_CLUSTER_HOSTS"
+              value: ""
+            - name: "MONGO_REPLICA_SET"
+              value: ""
+              
+
+            - name: "EMAIL_HOST"
+              value: ""
+              
+            - name: "SENDER_EMAIL"
+              value: ""
+              
+            - name: "SENDER_EMAIL_PASS"
+              value: ""
+              
+            - name: "AUTHORIZATION_TOKEN"
+              value: ""
+            - name: "WHATSAPP_URL"
+              value: "" 
+              
+            - name: FILE_SERVICE_URL
+              value: "https://file-service.SERVICE_NAMESPACE:30013/file-service/files?isPublic=true"
+              
+      
+        imagePullSecrets: 
+          - 
+            name: "SECRET"
+---    
+  apiVersion: "apps/v1"
+  kind: "Deployment"
+  metadata: 
+    name: "panoiq-file-storage"
+    # namespace: "staging"
+  spec: 
+    selector: 
+      matchLabels: 
+        app: "panoiq-file-storage"
+    replicas: 1
+    strategy: 
+      type: "RollingUpdate"
+      rollingUpdate: 
+        maxSurge: 1
+        maxUnavailable: 1
+    minReadySeconds: 5
+    template: 
+      metadata: 
+        labels: 
+          app: "panoiq-file-storage"
+      spec: 
+        containers: 
+          - 
+            name: "panoiq-file-storage"
+            image: "FILE_STORAGE_IMAGE"
+            imagePullPolicy: "Always"
+            ports: 
+              - 
+                containerPort: 34000
+            volumeMounts:
+            - mountPath: /usr/local/apache2/htdocs
+              name: panoiq-file-storage
+              subPath: htdocs
+            env:
+            - name: NODE_ENV
+              value: NODE_ENV_VAR
+        volumes:
+          - name: panoiq-file-storage
+            persistentVolumeClaim:
+              claimName: pvc-panoiq-file-storage                
+
+        imagePullSecrets:
+        - name: "SECRET"       

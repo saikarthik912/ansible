@@ -1,0 +1,6 @@
+host: pinot.passionbytes.io
+namespace: tools
+pinot_repository: gitlab.passionbytes.io:5050/panoiq/tools
+pinot_tag: pinot-new
+secret: registry
+server_ip: 172.31.19.79

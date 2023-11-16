@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ranger-admin-server
+  namespace: development
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ranger-admin-server
+  template:
+    metadata:
+        labels:
+          app: ranger-admin-server
+    spec:
+      containers:
+        - name: ranger-admin-server
+          image: gitlab.passionbytes.io:5050/panoiq/tools:ranger-admin
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 6080
+              protocol: TCP
+      imagePullSecrets:
+      - name: registry
+

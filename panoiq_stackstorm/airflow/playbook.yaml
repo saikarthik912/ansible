@@ -1,0 +1,178 @@
+- name: Installing Airflow
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+   - vars.yaml
+  tasks:
+    - name: copy directory
+      copy: 
+        src: ../airflow
+        dest: /tmp/
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/manifests/pv.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}" 
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/manifests/pvc.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/manifests/pv.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+ 
+    - name: replace
+      replace:
+        path: /tmp/airflow/manifests/connectorpv.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/manifests/csvpv.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/manifests/sparkpv.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "DEFAULT_AIRFLOW_REPOSITORY"
+        replace: "{{ defaultAirflowRepository }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "DEFAULT_AIRFLOW_TAG"
+        replace: "{{ defaultAirflowTag }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "DBUSER"
+        replace: "{{ dbUser }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "DBPASSWORD"
+        replace: "{{ dbPassword }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "DBHOST"
+        replace: "{{ dbHost }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "DBNAME"
+        replace: "{{ dbName }}"
+
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "STATSD_REPOSITORY"
+        replace: "{{ statsdrepository }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "STATSD_TAG"
+        replace: "{{ statsdtag }}"        
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "REDIS_REPOSITORY"
+        replace: "{{ redisrepository }}"
+
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "REDIS_TAG"
+        replace: "{{ redistag }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "PGBOUNCER_REPOSITORY"
+        replace: "{{ pgbouncerrepository }}"
+
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "PGBOUNCER_TAG"
+        replace: "{{ pgbouncertag }}"   
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "PGEXPORTER_REPOSTORY"
+        replace: "{{ pgexporterrepository }}" 
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "PGEXPORTER_TAG"
+        replace: "{{ pgexportertag }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "GITSYNC_REPOSITORY"
+        replace: "{{ gitsyncrepository }}"  
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/values.yaml
+        regexp: "GITSYNC_TAG"
+        replace: "{{ gitsynctag }}"        
+       
+    - name: replace
+      replace:
+        path: /tmp/airflow/manifests/ingress.yaml
+        regexp: "HOST"
+        replace: "{{ host }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/manifests/connectorpv.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/manifests/csvpv.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+    - name: replace
+      replace:
+        path: /tmp/airflow/manifests/sparkpv.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}" 
+
+    - name: create Volumes
+      command: kubectl apply -f /tmp/airflow/manifests/ -n {{ namespace }}
+
+    - name: Installing airflow using helm
+      command: helm install airflow  /tmp/airflow -n "{{ namespace }}"
+      ignore_errors: yes
+

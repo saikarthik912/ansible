@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflowtoolcsv
+  namespace: tools
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:        
+     requests:
+       storage: 4Gi
+  storageClassName: local-storage
+

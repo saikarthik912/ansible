@@ -1,0 +1,4 @@
+namespace: "tools"
+trino_image_repository: "gitlab.passionbytes.io:5050/panoiq/tools"
+trino_image_tag: "trino-ansiblev11"
+server: "172.31.19.79"

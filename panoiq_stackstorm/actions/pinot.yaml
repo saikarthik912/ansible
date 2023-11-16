@@ -1,0 +1,26 @@
+---
+  name: "pinot"
+  runner_type: "python-script"
+  description: "execute python script"
+  enabled: true
+  entry_point: "pinot.py"
+  parameters:
+      json_parameter:
+        type: "string"
+        required: true
+        default: "{}"
+        description: "A JSON object or data"
+        position: 1
+      timeout:
+        type: "integer"
+        default: 600
+  output_schema:
+     result:
+        type: "string"
+        required: true
+     version:
+        type: string
+        required: true
+     executable:
+        type: string
+        required: true

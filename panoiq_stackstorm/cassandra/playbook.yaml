@@ -1,0 +1,26 @@
+- name: Installing cassandra
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+   - vars.yaml
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../cassandra
+        dest: /tmp/
+
+    - name: Permissions
+      command: chmod +x /tmp/cassandra/script.sh    
+       
+    - name: add namespace
+      command: kubectl apply -f /tmp/cassandra/namespace.yaml
+      ignore_errors: yes
+    
+
+    - name: Run shell script
+      script: script.sh {{ namespace }} {{ server_ip }} {{ image }} {{ secret }}
+
+
+    - name: Apply Manifests
+      command: kubectl apply -f /tmp/cassandra/manifests/ -n {{ namespace }}      

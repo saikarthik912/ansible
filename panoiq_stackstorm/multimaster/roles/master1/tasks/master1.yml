@@ -1,0 +1,114 @@
+    - name: Reset Kubeadm
+      command: kubeadm reset -f
+      run_once: true
+      ignore_errors: yes
+      when: not added_nodes
+
+    - name: Remove .kube folder
+      command: rm -rf $HOME/.kube/config
+      args:
+        chdir: $HOME
+      when: not added_nodes        
+
+    - name: Remove masterjoin.sh
+      command: rm -rf /home/ec2-user/masterjoin.sh
+      when: not added_nodes
+
+    - name: Initialize the cluster
+      command: kubeadm init --control-plane-endpoint={{ master1 }} --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address={{ master1 }} --upload-certs
+      args:
+        chdir: $HOME
+        creates: cluster_initialized.txt
+      run_once: true
+      ignore_errors: yes
+      register: init_output
+      when: not added_nodes
+
+    - name: Save Kubeadm init output
+      become: yes
+      become_user: ec2-user
+      copy:
+        content: "{{ init_output.stdout }}"
+        dest: /home/ec2-user/kubeadm_init.txt
+        mode: '0777'
+      when: not added_nodes
+
+    - name: Get Master Join Command
+      shell: |
+        awk '/kubeadm join/{print;getline;print;getline;print;getline;print;}' /home/ec2-user/kubeadm_init.txt | head -n 3 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//' -e 's/\\//g' -e ':a;N;$!ba;s/\n//g' | sed 's/^[ \t]*//;s/[ \t]*$//' | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//' -e 's/\\--/--/g' -e ':a;N;$!ba;s/\n//g'
+      register: mastercommandresult
+      when: not added_nodes     
+
+    - name: Create Master Join Script
+      copy:
+        content: "{{ mastercommandresult.stdout }}"
+        dest: /home/ec2-user/masterjoin.sh
+        mode: 'u+x'
+      when: not added_nodes
+
+    - name: Get Worker Join Command
+      shell: |
+        awk '/kubeadm join/{print;getline;print;getline;print;getline;print;}' /home/ec2-user/kubeadm_init.txt | head -n 3 | sed 's/^[ \t]*//;s/[ \t]*$//' | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//' -e 's/\\//g' -e ':a;N;$!ba;s/\n//g' | sed 's/^[ \t]*//;s/[ \t]*$//' | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//' -e 's/\\--/--/g' -e ':a;N;$!ba;s/\n//g' | sed 's/ --control-plane --certificate-key [a-zA-Z0-9]*//'
+      register: workercommandresult
+      when: not added_nodes
+
+
+    - name: Create Worker Join Script
+      copy:
+        content: "sudo {{ workercommandresult.stdout }}"
+        dest: /home/ec2-user/workerjoin.sh
+        mode: '0777'
+      when: not added_nodes
+
+    - name: Create Master Join in all masters
+      copy:
+        content: "{{ mastercommandresult.stdout }}"
+        dest: /home/ec2-user/masterjoin.sh
+        mode: '0777'
+      delegate_to: "{{ item }}"
+      with_items: "{{ groups['masterjoin'] }}"
+      when: not added_nodes
+
+    - name: Create Worker Join in all workers
+      copy:
+        content: "{{ workercommandresult.stdout }}"
+        dest: /home/ec2-user/workerjoin.sh
+        mode: '0777'
+      delegate_to: "{{ item }}"
+      with_items: "{{ groups['workerjoin'] }}"
+      when: not added_nodes
+
+    - name: Copy files for admin.conf
+      command: sudo mkdir -p /home/ec2-user/.kube
+      run_once: true
+      ignore_errors: no
+      when: not added_nodes
+
+      
+    - name: Copy files for admin.conf
+      command: sudo cp -r /etc/kubernetes/admin.conf /home/ec2-user/.kube/config   
+      run_once: true
+      ignore_errors: no
+      when: not added_nodes
+
+    - name: Change ownership
+      raw: |
+        sudo chown $(id -u):$(id -g) /home/ec2-user/.kube/config
+      when: not added_nodes
+    
+    - name: Giving permission to config file
+      command: sudo chmod 1777 /home/ec2-user/.kube/config
+      run_once: true
+      ignore_errors: no
+      when: not added_nodes
+
+
+    - name: Install Pod network
+      command: kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
+      args:
+        chdir: $HOME
+      become: yes
+      become_user: ec2-user
+      when: not added_nodes
+
+

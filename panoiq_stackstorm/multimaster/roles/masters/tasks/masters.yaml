@@ -1,0 +1,17 @@
+    - name: Create .kube directory inside kube user's home directory
+      become: true
+      become_user: ec2-user      
+      file:
+        path: /home/ec2-user/.kube
+        state: directory
+        mode: 0777
+      run_once: true
+      ignore_errors: yes
+
+
+    - name: Install wget
+      become: true
+      become_user: ec2-user
+      shell: sudo yum install wget -y      
+
+    

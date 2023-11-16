@@ -1,0 +1,6 @@
+- name: Installing kubernetes packages on all nodes
+  become: yes
+  become_user: root
+  import_tasks: setup_hosts.yaml
+
+

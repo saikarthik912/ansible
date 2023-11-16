@@ -1,0 +1,71 @@
+- name: Installing sonar
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+   - vars.yaml
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../sonar
+        dest: /tmp/
+
+    - name: Print the value of the variable
+      debug:
+        var: namespace
+
+    #- name: replace
+      #replace:
+        #path: /tmp/sonar/sonarqube-deployment.yaml
+        #regexp: "NAMESPACE"
+        #replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/sonar/sonarqube-deployment.yaml
+        regexp: "BUSYBOX_IMAGE"
+        replace: "{{ busybox_image }}"
+
+    - name: replace
+      replace:
+        path: /tmp/sonar/sonarqube-deployment.yaml
+        regexp: "SONAR_IMAGE"
+        replace: "{{ sonar_image }}"
+
+    #- name: replace
+      #replace:
+        #path: /tmp/sonar/sonarqube-service.yaml
+        #regexp: "NAMESPACE"
+        #replace: "{{ namespace }}"
+    
+    #- name: replace
+      #replace:
+        #path: /tmp/sonar/sonarqube-ingress.yaml
+        #regexp: "NAMESPACE"
+        #replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/sonar/sonarqube-ingress.yaml
+        regexp: "HOST"
+        replace: "{{ host }}"
+
+    
+    - name: creating namespace
+      command: kubectl apply -f /tmp/sonar/namespace.yaml 
+      ignore_errors: yes
+
+
+    - name: Deploying Sonar Using sonarqube-deployment.yaml File
+      command: kubectl apply -f /tmp/sonar/sonarqube-deployment.yaml  -n "{{ namespace }}"
+    
+    - name: Deploying Sonar Using sonarqube-service.yaml File
+      command: kubectl apply -f /tmp/sonar/sonarqube-service.yaml  -n "{{ namespace }}"
+    
+    - name: Deploying Sonar Using sonarqube-ingress.yaml File
+      command: kubectl apply -f /tmp/sonar/sonarqube-ingress.yaml -n "{{ namespace }}"
+
+
+
+
+

@@ -1,0 +1,5 @@
+namespace: logging
+opensearch_repository: gitlab.passionbytes.io:5050/panoiq/tools
+opensearch_tag: opensearch_kibanav1
+secret: registry
+server_ip: 172.31.19.79

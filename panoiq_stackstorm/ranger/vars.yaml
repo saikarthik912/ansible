@@ -1,0 +1,5 @@
+host: testranger.passionbytes.io
+image: gitlab.passionbytes.io:5050/panoiq/tools:ranger-ansible-new
+namespace: tools
+secret: registry
+server_ip: 172.31.19.79

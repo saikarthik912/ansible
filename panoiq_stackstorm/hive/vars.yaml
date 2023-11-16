@@ -1,0 +1,8 @@
+hive_database: hive
+hive_image_repository: gitlab.passionbytes.io:5050/panoiq/tools
+hive_image_tag: hive
+hive_password: hive
+hive_username: hive
+namespace: tools
+secret: registry
+server_ip: 172.31.19.79

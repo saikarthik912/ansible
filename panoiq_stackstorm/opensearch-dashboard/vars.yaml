@@ -1,0 +1,14 @@
+host: opensearch.passionbytes.io
+namespace: logging
+opensearch_dashboards_openid_base_redirect_url: https://kibana.passionbytes.io
+opensearch_dashboards_openid_client_id: masterClient
+opensearch_dashboards_openid_client_secret: JQAJpEClFih6GiFEcgG8aWbJxSJTwcsE
+opensearch_dashboards_openid_connect_url: https://testkeycloak.passionbytes.io/realms/Realm/.well-known/openid-configuration
+opensearch_dashboards_opensearchhost: https://opensearch-cluster-master
+opensearch_dashboards_opensearchport: '9200'
+opensearch_dashboards_repository: opensearchproject/opensearch-dashboards
+opensearch_dashboards_tag: 2.4.0
+opensearch_password: admin
+opensearch_username: admin
+secret: admin
+server_ip: 172.31.19.79

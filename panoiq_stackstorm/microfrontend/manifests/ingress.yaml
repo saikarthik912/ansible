@@ -1,0 +1,126 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: panoiq-web-components
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: APP_HOST
+      http:
+        paths:
+          - path: /web-components/(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: panoiq-web-components 
+                port: 
+                  number: 34002
+  ingressClassName: nginx
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: panoiq-container-mfe
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: APP_HOST
+      http:
+        paths:
+          - path: /container/(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: panoiq-container-mfe 
+                port: 
+                  number: 34001
+  ingressClassName: nginx
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: panoiq-control-mfe
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: APP_HOST
+      http:
+        paths:
+          - path: /control/(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: panoiq-control-mfe
+                port:
+                  number: 35001
+  ingressClassName: nginx
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: panoiq-create-mfe
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: APP_HOST
+      http:
+        paths:
+          - path: /create/(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: panoiq-create-mfe 
+                port: 
+                  number: 34003
+  ingressClassName: nginx
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: panoiq-file-storage
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: APP_HOST
+      http:
+        paths:
+          - path: /storage/(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: panoiq-file-storage
+                port: 
+                  number: 34000
+  ingressClassName: nginx
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: testquerybook.passionbytes.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 32013
+  ingressClassName: nginx
+

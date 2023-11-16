@@ -1,0 +1,64 @@
+- name: Installing prometheus
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+   - vars.yaml
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../prometheus
+        dest: /tmp/
+
+    - name: Print the value of the variable
+      debug:
+        var: prometheus_image_repository
+
+    - name: replace
+      replace:
+        path: /tmp/prometheus/values.yaml
+        regexp: "CONFIGMAP_RELOAD_IMAGE_REPOSITORY"
+        replace: "{{ configmap_reload_image_repository }}"
+
+    - name: replace
+      replace:
+        path: /tmp/prometheus/values.yaml
+        regexp: "CONFIGMAP_RELOAD_IMAGE_TAG"
+        replace: "{{ configmap_reload_image_tag }}"
+
+    - name: replace
+      replace:
+        path: /tmp/prometheus/values.yaml
+        regexp: "PROMETHEUS_IMAGE_REPOSITORY"
+        replace: "{{ prometheus_image_repository }}"
+
+    - name: replace
+      replace:
+        path: /tmp/prometheus/values.yaml
+        regexp: "PROMETHEUS_IMAGE_TAG"
+        replace: "{{ prometheus_image_tag }}"
+    - name: replace
+      replace:
+        path: /tmp/prometheus/manifests/pv.yml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+    - name: replace
+      replace:
+        path: /tmp/prometheus/manifests/pv.yml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"        
+
+    - name: replace
+      replace:
+        path: /tmp/prometheus/values.yaml
+        regexp: "SECRET"
+        replace: "{{ secret }}"
+
+    - name: Installing pv using pv.yaml file
+      command: kubectl apply -f /tmp/prometheus/manifests/ -n "{{ namespace }}" 
+
+
+    - name: Installing prometheus using helm
+      command: helm install prometheus  /tmp/prometheus -n "{{ namespace }}"
+

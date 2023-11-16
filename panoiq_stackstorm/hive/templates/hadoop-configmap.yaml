@@ -1,0 +1,18 @@
+{{- if not .Values.conf.hadoopConfigMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hive.fullname" . }}-hive-hadoop-config
+  labels:
+    app.kubernetes.io/name: {{ include "hive.name" . }}
+    {{- include "hive.labels" . | nindent 4 }}
+data:
+  core-site.xml: |-
+{{ tpl (.Files.Get "resources/config/core-site.xml") . | indent 4 }}
+  hdfs-site.xml: |-
+{{ tpl (.Files.Get "resources/config/hdfs-site.xml") . | indent 4 }}
+  mapred-site.xml: |-
+{{ tpl (.Files.Get "resources/config/mapred-site.xml") . | indent 4 }}
+  yarn-site.xml: |-
+{{ tpl (.Files.Get "resources/config/yarn-site.xml") . | indent 4 }}
+{{- end }}

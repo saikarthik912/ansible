@@ -1,0 +1,4 @@
+- name: Deploy ingress
+  become: yes
+  become_user: root
+  import_tasks: nginx-ingress.yaml

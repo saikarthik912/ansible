@@ -1,0 +1,38 @@
+---
+  name: "kafka-ui"
+  runner_type: "python-script"
+  description: "execute python script"
+  enabled: true
+  entry_point: "kafka-ui.py"
+  parameters:
+      namespace:
+        type: "string"
+        description: "namespace"
+        required: true
+        position: 0
+      server_ip:
+        type: "string"
+        required: true
+        position: 1
+      image:
+        type: "string"
+        description: "type"
+        required: true
+        position: 2
+      secrets:
+        type: "string"
+        description: "type"
+        position: 3
+      timeout:
+        type: "integer"
+        default: 600
+  output_schema:
+     result:
+        type: "string"
+        required: true
+     version:
+        type: string
+        required: true
+     executable:
+        type: string
+        required: true

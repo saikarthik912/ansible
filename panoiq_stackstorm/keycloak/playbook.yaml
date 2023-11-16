@@ -1,0 +1,16 @@
+- name: Installing keycloak
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+    - vars.yaml  
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../keycloak
+        dest: /tmp/
+    - name: Run shell script
+      script: script.sh {{ namespace }} {{ server_ip }} {{ image }} {{ secret }} {{ host }}
+    - name: Apply Manifests
+      command: kubectl apply -f /tmp/keycloak/manifests/ -n {{ namespace }}
+      ignore_errors: yes

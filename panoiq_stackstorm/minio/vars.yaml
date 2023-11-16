@@ -1,0 +1,10 @@
+MINIO_IDENTITY_OPENID_CLIENT_ID: masterClient
+MINIO_IDENTITY_OPENID_CLIENT_SECRET: JQAJpEClFih6GiFEcgG8aWbJxSJTwcsE
+MINIO_IDENTITY_OPENID_CONFIG_URL: https://testkeycloak.passionbytes.io/realms/Realm/.well-known/openid-configuration
+MINIO_IDENTITY_OPENID_ENABLE: true
+MINIO_IDENTITY_OPENID_SCOPES: openid
+host: testminio.passionbytes.io
+image: minio/minio
+namespace: tools
+secret: registry
+server_ip: 172.31.19.79

@@ -1,0 +1,98 @@
+- name: Installing Hive
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+   - vars.yaml
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../hive
+        dest: /tmp/
+
+    - name: Print the value of the variable
+      debug:
+        var: hive_image_repository
+
+    - name: replace
+      replace:
+        path: /tmp/hive/values.yaml
+        regexp: "HIVE_IMAGE_REPOSITORY"
+        replace: "{{ hive_image_repository }}"
+
+    - name: replace
+      replace:
+        path: /tmp/hive/charts/hive-metastore/values.yaml
+        regexp: "HIVE_IMAGE_REPOSITORY"
+        replace: "{{ hive_image_repository }}"
+ 
+    - name: replace
+      replace: 
+        path: /tmp/hive/charts/hive-metastore/values.yaml
+        regexp: "HIVE_IMAGE_TAG"
+        replace: "{{ hive_image_tag }}"
+
+    - name: replace
+      replace:
+        path: /tmp/hive/values.yaml
+        regexp: "HIVE_IMAGE_TAG"
+        replace: "{{ hive_image_tag }}"
+
+    - name: replace
+      replace:
+        path: /tmp/hive/values.yaml
+        regexp: "HIVE_DATABASE"
+        replace: "{{ hive_database }}"
+
+    - name: replace
+      replace:
+        path: /tmp/hive/values.yaml
+        regexp: "HIVE_USERNAME"
+        replace: "{{ hive_username }}"
+
+    - name: replace
+      replace:
+        path: /tmp/hive/values.yaml
+        regexp: "HIVE_PASSWORD"
+        replace: "{{ hive_password }}"
+
+    - name: replace
+      replace:
+        path: /tmp/hive/charts/hive-metastore/values.yaml
+        regexp: "HIVE_IMAGE_SECRET"
+        replace: "{{ secret }}"
+
+    - name: replace
+      replace:
+        path: /tmp/hive/charts/hive-metastore/values.yaml
+        regexp: "HIVE_DATABASE"
+        replace: "{{ hive_database }}"
+
+ 
+    - name: replace
+      replace:
+        path: /tmp/hive/charts/hive-metastore/values.yaml
+        regexp: "HIVE_USERNAME"
+        replace: "{{ hive_username }}"
+
+    - name: replace
+      replace:
+        path: /tmp/hive/charts/hive-metastore/values.yaml
+        regexp: "HIVE_PASSWORD"
+        replace: "{{ hive_password }}"
+    
+    - name: replace
+      replace:
+        path: /tmp/hive/values.yaml
+        regexp: "HIVE_IMAGE_SECRET"
+        replace: "{{ secret }}"
+
+
+    - name: add namespace
+      command: kubectl apply -f /tmp/hive/namespace.yaml
+      ignore_errors: yes
+
+
+    - name: Installing hive using helm
+      command: helm install hive  /tmp/hive -n "{{ namespace }}"
+      ignore_errors: yes

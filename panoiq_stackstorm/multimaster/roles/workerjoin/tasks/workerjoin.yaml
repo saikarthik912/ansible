@@ -1,0 +1,3 @@
+- name: Join Worker
+  command: sh /home/ec2-user/workerjoin.sh
+  when: not added_nodes

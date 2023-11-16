@@ -1,0 +1,16 @@
+- name: Installing minio
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+    - vars.yaml
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../minio
+        dest: /tmp/
+    - name: Run shell script
+      script: script.sh {{ namespace }} {{ server_ip }} {{ image }} {{ secret }} {{ host }} {{ MINIO_IDENTITY_OPENID_CONFIG_URL }} {{ MINIO_IDENTITY_OPENID_CLIENT_ID }} {{ MINIO_IDENTITY_OPENID_CLIENT_SECRET }} {{ MINIO_IDENTITY_OPENID_SCOPES }} 
+    - name: Apply Manifests
+      command: kubectl apply -f /tmp/minio/manifests/ -n {{ namespace }}
+      ignore_errors: yes

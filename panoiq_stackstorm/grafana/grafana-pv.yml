@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfspv-grafana
+spec:
+  capacity:
+    storage: 7Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  #storageClassName: local-storage
+  claimRef:
+     namespace: test
+     name: nfspvc-grafana
+  nfs:
+    path: /mnt/grafana
+    server: test
+    readOnly: false

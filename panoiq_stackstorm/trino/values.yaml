@@ -1,0 +1,284 @@
+# Default values for trino.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: "TRINO_IMAGE_REPOSITORY"
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart version.
+  tag: "TRINO_IMAGE_TAG"
+
+imagePullSecrets:
+  - name: "IMAGE_SECRET"
+
+ingress:
+  #annotations:
+  enabled: false
+  host: ""
+  path: "/"
+  port: 32004
+  ingressClassName: nginx
+#  tls:
+#    secretName:
+
+server:
+  workers: 1
+  node:
+    environment: production
+    dataDir: /data/trino
+    pluginDir: /usr/lib/trino/plugin
+  log:
+    trino:
+      level: DEBUG
+  config:
+    path: /etc/trino
+    http:
+      port: 
+    https:
+      enabled: true
+      port: 8443
+      keystore:
+        path: ""
+    # Trino supports multiple authentication types: PASSWORD, CERTIFICATE, OAUTH2, JWT, KERBEROS
+    # For more info: https://trino.io/docs/current/security/authentication-types.html
+    #authenticationType: ""
+    query:
+      maxMemory: "4GB"
+      maxMemoryPerNode: "1GB"
+    memory:
+      heapHeadroomPerNode: "1GB"
+  exchangeManager:
+    name: "filesystem"
+    baseDir: "/tmp/trino-local-file-system-exchange-manager"
+  workerExtraConfig: ""
+  coordinatorExtraConfig: "http-server.process-forwarded=true"
+  autoscaling:
+    enabled: false
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 50
+
+accessControl: {}
+  # type: configmap
+  # refreshPeriod: 60s
+  # # Rules file is mounted to /etc/trino/access-control
+  # configFile: "rules.json"
+  # rules:
+  #   rules.json: |-
+  #     {
+  #       "catalogs": [
+  #         {
+  #           "user": "admin",
+  #           "catalog": "(mysql|system)",
+  #           "allow": "all"
+  #         },
+  #         {
+  #           "group": "finance|human_resources",
+  #           "catalog": "postgres",
+  #           "allow": true
+  #         },
+  #         {
+  #           "catalog": "hive",
+  #           "allow": "all"
+  #         },
+  #         {
+  #           "user": "alice",
+  #           "catalog": "postgresql",
+  #           "allow": "read-only"
+  #         },
+  #         {
+  #           "catalog": "system",
+  #           "allow": "none"
+  #         }
+  #       ],
+  #       "schemas": [
+  #         {
+  #           "user": "admin",
+  #           "schema": ".*",
+  #           "owner": true
+  #         },
+  #         {
+  #           "user": "guest",
+  #           "owner": false
+  #         },
+  #         {
+  #           "catalog": "default",
+  #           "schema": "default",
+  #           "owner": true
+  #         }
+  #       ]
+  #     }
+
+additionalNodeProperties: {}
+
+additionalConfigProperties: {}
+
+additionalLogProperties: {}
+
+additionalExchangeManagerProperties: {}
+
+eventListenerProperties: {}
+
+additionalCatalogs: 
+  postgresql: |-
+    connector.name=postgresql
+    connection-url=jdbc:postgresql://postgres.development/trino
+    connection-user=trinoadmin
+    connection-password=trino
+
+
+    #mysql: |-
+    #connector.name=mysql
+    #connection-url=jdbc:mysql://mysql.development:3306
+    #connection-user=root
+    #connection-password=panoiq
+    #case-insensitive-name-matching=true
+  
+  tpcds: |-
+    connector.name=tpcds
+    tpcds.splits-per-node=4
+  tpch: |-
+    connector.name=tpch
+    tpch.splits-per-node=4
+
+  hive: |-
+    connector.name=hive
+    hive.metastore.uri=thrift://hive-hive-metastore.development:9083
+    hive.s3.path-style-access=true
+    #hive.metastore.catalog.dir=s3://trino-db/
+    hive.s3.endpoint=http://minio-svc.development:9000
+    hive.s3.aws-access-key=minio
+    hive.s3.aws-secret-key=minio123
+    hive.non-managed-table-writes-enabled=true
+    hive.s3select-pushdown.enabled=true
+    hive.storage-format=ORC
+    hive.allow-drop-table=true
+
+  pinot: |-
+    connector.name=pinot
+    pinot.controller-urls=pinot-controller-headless.development:9000
+
+  Oracle: |-
+    connector.name=oracle
+    connection-url=jdbc:oracle:thin:@//3.108.199.0:31521/orcl
+    connection-user=sys as sysdba
+    connection-password=panoiq
+   
+  mongodb: |-
+    connector.name=mongodb
+    mongodb.connection-url=mongodb://root:root@mongodb-svc-v2.development:27017
+
+  cassandra: |-
+    connector.name=cassandra
+    cassandra.contact-points=cassandra.development
+    cassandra.load-policy.dc-aware.local-dc=datacenter1
+    cassandra.username=cassandra
+    cassandra.password=cassandra
+    cassandra.native-protocol-port=9042
+
+  redis: |-
+    connector.name=redis
+    redis.user=default
+    redis.password=jhnjehndTOXTWArhNEjTTyh4QdmvdRng
+    redis.nodes=redis-10309.c11.us-east-1-2.ec2.cloud.redislabs.com:10309  
+  
+  elasticsearch: |-
+    connector.name=elasticsearch
+    elasticsearch.host=opensearch-cluster-master.logging
+    elasticsearch.port=9200
+    elasticsearch.default-schema-name=default
+
+
+  iceberg: |-
+    connector.name=iceberg
+    hive.metastore.uri=thrift://hive-hive-metastore.development:9083
+
+# Array of EnvVar (https://v1-18.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.18/#envvar-v1-core)
+env: []
+
+initContainers: {}
+  # coordinator:
+  #   - name: init-coordinator
+  #     image: busybox:1.28
+  #     imagePullPolicy: IfNotPresent
+  #     command: ['sh', '-c', "until nslookup myservice.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for myservice; sleep 2; done"]
+  # worker:
+  #   - name: init-worker
+  #     image: busybox:1.28
+  #     command: ['sh', '-c', 'echo The worker is running! && sleep 3600']
+
+securityContext:
+  runAsUser: 0
+  runAsGroup: 0
+
+service:
+  type: NodePort
+  port: 8080
+  nodePort: 32004
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+auth: 
+  # Set username and password
+  # https://trino.io/docs/current/security/password-file.html#file-format
+  # passwordAuth: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+  # Annotations to add to the service account
+  annotations: {}
+
+secretMounts: []
+
+coordinator:
+  jvm:
+    maxHeapSize: "8G"
+    gcMethod:
+      type: "UseG1GC"
+      g1:
+        heapRegionSize: "32M"
+
+  additionalJVMConfig: {}
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+worker:
+  jvm:
+    maxHeapSize: "8G"
+    gcMethod:
+      type: "UseG1GC"
+      g1:
+        heapRegionSize: "32M"
+
+  additionalJVMConfig: {}
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+ 
+  

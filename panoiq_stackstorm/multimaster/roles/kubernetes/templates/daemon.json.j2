@@ -1,0 +1,15 @@
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "insecure-registries": [
+     "k8s.gcr.io",
+     "docker.io",
+     "quay.io",
+     "registry.access.redhat.com"
+  ]
+}
+
+

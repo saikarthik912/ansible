@@ -1,0 +1,12 @@
+- name: Remove TOML
+  shell: |
+    sudo mv /etc/containerd/config.toml /etc/containerd/config.toml.bkp && sudo systemctl restart containerd
+
+- name: Install NFS
+  shell: |
+    sudo yum install nfs-utils rpcbind
+
+- name: Restart & enable services
+  shell: |
+    sudo systemctl start nfs-server && sudo systemctl enable nfs-server && sudo systemctl start rpcbind && sudo systemctl enable rpcbind
+

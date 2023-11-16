@@ -1,0 +1,24 @@
+- name: Installing redis
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+   - vars.yaml
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../redis
+        dest: /tmp/
+    
+    - name: permission to redis
+      command: chmod -R 1777 /tmp/redis/ 
+   
+    - name: Run shell script
+      script: script.sh {{ namespace }} {{ server_ip }} {{ image }} {{ secret }}
+      ignore_errors: yes
+
+    - name: Apply Manifests
+      command: kubectl apply -f /tmp/redis/manifests/ -n {{ namespace }}
+      ignore_errors: yes
+
+

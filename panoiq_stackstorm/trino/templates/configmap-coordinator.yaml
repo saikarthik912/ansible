@@ -1,0 +1,143 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "trino.coordinator" . }}
+  labels:
+    app: {{ template "trino.name" . }}
+    chart: {{ template "trino.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: coordinator
+data:
+  node.properties: |
+    node.environment={{ .Values.server.node.environment }}
+    node.data-dir={{ .Values.server.node.dataDir }}
+    plugin.dir={{ .Values.server.node.pluginDir }}
+  {{- range $configValue := .Values.additionalNodeProperties }}
+    {{ $configValue }}
+  {{- end }}
+
+  jvm.config: |
+    -server
+    -Xmx{{ .Values.coordinator.jvm.maxHeapSize }}
+    -XX:+{{ .Values.coordinator.jvm.gcMethod.type }}
+    -XX:G1HeapRegionSize={{ .Values.coordinator.jvm.gcMethod.g1.heapRegionSize }}
+    -XX:+UseGCOverheadLimit
+    -XX:+ExplicitGCInvokesConcurrent
+    -XX:+HeapDumpOnOutOfMemoryError
+    -XX:+ExitOnOutOfMemoryError
+    -Djdk.attach.allowAttachSelf=true
+    -XX:-UseBiasedLocking
+    -XX:ReservedCodeCacheSize=512M
+    -XX:PerMethodRecompilationCutoff=10000
+    -XX:PerBytecodeRecompilationCutoff=10000
+    -Djdk.nio.maxCachedBufferSize=2000000
+    -XX:+UnlockDiagnosticVMOptions
+    -XX:+UseAESCTRIntrinsics
+  {{- range $configValue := .Values.coordinator.additionalJVMConfig }}
+    {{ $configValue }}
+  {{- end }}
+  
+  config.properties: |
+    coordinator=true
+{{- if gt (int .Values.server.workers) 0 }}
+    node-scheduler.include-coordinator=false
+{{- else }}
+    node-scheduler.include-coordinator=true
+{{- end }}
+    http-server.http.port={{ .Values.service.port }}
+    query.max-memory={{ .Values.server.config.query.maxMemory }}
+    query.max-memory-per-node={{ .Values.server.config.query.maxMemoryPerNode }}
+    memory.heap-headroom-per-node={{ .Values.server.config.memory.heapHeadroomPerNode }}
+    discovery-server.enabled=true
+    discovery.uri=http://{{ template "trino.fullname" . }}:{{ .Values.service.port }}
+    #discovery.uri=https://trino.passionbytes.io
+{{- if .Values.server.config.authenticationType }}
+    http-server.authentication.type={{ .Values.server.config.authenticationType }}
+    #http-server.authentication.oauth2.oidc.discovery=false
+    #http-server.authentication.type=oauth2
+    #http-server.https.port=8443
+    #http-server.https.enabled=true
+    #http-server.process-forwarded=true
+    #http-server.authentication.oauth2.issuer=https://keycloak.passionbytes.io/realms/PanoIQ
+    #http-server.authentication.oauth2.client-id=masterClient
+    #http-server.authentication.oauth2.client-secret=1KGq6EvL4HRk50u2EwKmMG3UnRZ7K1eq
+    #http-server.authentication.oauth2.auth-url=https://keycloak.passionbytes.io/realms/PanoIQ/protocol/openid-connect/auth
+    #http-server.authentication.oauth2.token-url=https://keycloak.passionbytes.io/realms/PanoIQ/protocol/openid-connect/token
+    #http-server.authentication.oauth2.jwks-url=https://keycloak.passionbytes.io/realms/PanoIQ/protocol/openid-connect/certs
+    #http-server.authentication.oauth2.scopes=profile
+    #http-server.authentication.oauth2.refresh-tokens=true
+    #web-ui.authentication.type=oauth2
+    #io.trino.server.security.oauth2=DEBUG
+    
+    
+{{- end }}
+  {{- range $configValue := .Values.additionalConfigProperties }}
+    {{ $configValue }}
+  {{- end }}
+  {{- if .Values.server.config.https.enabled }}
+    #internal-communication.https.required=true
+    #http-server.https.enabled=true
+    #internal-communication.shared-secret=dV8TmN2Eu+AQ3QiCR5zkJot/eUqGH6ZGB2Otrx3wr3TB8Vg/5nusPKVIaOOEjHvavzuRFVrpXzQfTjhzdRHwH8i3xeGw4B1zxFZ/qx8+xfSRhnmb2K1IS1TqxlhIU2rb4/KztnlIlCt/RmU0EUzSYgeHzeBoQ4Vt1EUpRI82pX8ay2cvIuGDDya/TV838UecnRW8DQO/eHFLSC9dFwOC0ZHAHvdZxF9OM/ia3fZkh5FUAE33iTlF4ZfnZ82ar8yNNxk8xuSrGM0YEttFDFPqMGy5UnBmPCi/roQAMQs95qRi6ULSTCA4dJ0mN3GA5Z4x46m9S/RQgXRyxKZY0ARywp4xLyGaF6O44HZCPWfoJmETdof83atP2c+/42ixfyRu9P4WSQLnZ7wMFrd6XekNYbGCjdDmRYQJ5tHqyje3YZTV0rJHsmgN0qSYzVZ2Js95L0bxjicL6ilZvDc3ZxZnJg1AdrIZubNKLAy9rYUFMcYSG6I7aA1dyL0DKXoAhzHX3QfyLG8s0XjQeD7KFKHjabYa2dhRkLuves6UeAmU22i5ovycPetjaFD/2/FTqTk45JSeqZA+i1tjekSisZShpqlKF466nvKEhATmlg7ClLJOG0zm8LwnTYWwWqckrm69fTPu/puFTB6guGXA6g8g1RCf87IpY+3lkjFgOGPteI0=
+ 
+    #http-server.https.port={{ .Values.server.config.https.port }}
+    #http-server.https.keystore.path={{ .Values.server.config.https.keystore.path }}
+   
+
+  {{- end }}
+  {{ .Values.server.coordinatorExtraConfig | indent 4 }}
+ 
+ 
+
+{{- if .Values.accessControl }}{{- if eq .Values.accessControl.type "configmap" }}
+  access-control.properties: |
+    access-control.name=file
+    {{- if .Values.accessControl.refreshPeriod }}
+    security.refresh-period={{ .Values.accessControl.refreshPeriod }}
+    {{- end }}
+    security.config-file={{ .Values.server.config.path }}/access-control/{{ .Values.accessControl.configFile | default "rules.json" }}
+{{- end }}{{- end }}
+
+  exchange-manager.properties: |
+    exchange-manager.name={{ .Values.server.exchangeManager.name }}
+    exchange.base-directories={{ .Values.server.exchangeManager.baseDir }}
+  {{- range $configValue := .Values.additionalExchangeManagerProperties }}
+    {{ $configValue }}
+  {{- end }}
+
+  log.properties: |
+    io.trino={{ .Values.server.log.trino.level }}
+  {{- range $configValue := .Values.additionalLogProperties }}
+    {{ $configValue }}
+  {{- end }}
+
+  {{- if eq .Values.server.config.authenticationType "PASSWORD" }}
+  password-authenticator.properties: |
+    password-authenticator.name=file
+    file.password-file={{ .Values.server.config.path }}/auth/password.db
+  {{- end }}
+
+{{ if .Values.eventListenerProperties }}
+  event-listener.properties: |
+  {{- range $configValue := .Values.eventListenerProperties }}
+    {{ $configValue }}
+  {{- end }}
+{{ end }}
+
+---
+
+{{- if .Values.accessControl }}{{- if eq .Values.accessControl.type "configmap" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trino-access-control-volume-coordinator
+  labels:
+    {{- include "trino.labels" . | nindent 4 }}
+    app.kubernetes.io/component: coordinator
+data:
+  {{- range $key, $val := .Values.accessControl.rules }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+{{- end }}{{- end }}
+
+---

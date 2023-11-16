@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+  name: os-ingress
+  namespace: NAMESPACE
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: "HOST"
+    http:
+      paths:
+      - backend:
+          service:
+            name: kibana
+            port:
+              number: 32484
+        path: /
+        pathType: Prefix
+

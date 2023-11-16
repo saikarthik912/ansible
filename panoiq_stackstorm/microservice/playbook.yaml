@@ -1,0 +1,149 @@
+- name: Installing microservice
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+    - vars.yaml  
+  tasks:
+
+    - name: copy directory
+      copy: 
+        src: ../microservice
+        dest: /tmp/
+          
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/ingress.yaml
+        regexp: "APP_HOST"
+        replace: "{{ app_host }}"        
+     
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "TOOLS_NAMESPACE"
+        replace: "{{ tools_namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "SERVICE_NAMESPACE"
+        replace: "{{ service_namespace }}"
+   
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "SECRET"
+        replace: "{{ secret }}"
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "NODE_ENV_VAR"
+        replace: "{{ node_env_var }}"
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "KEYCLOAK_HOST"
+        replace: "{{ keycloak_host }}"
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "AIRFLOW_HOST"
+        replace: "{{ airflow_host }}" 
+
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "CHATGPT_HOST"
+        replace: "{{ chatgpt_host }}"
+
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "FILE_STORAGE_IMAGE"
+        replace: "{{ file_storage_image }}"
+
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "NOTIFICATION_IMAGE"
+        replace: "{{ notification_image }}"
+
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "RBAC_SERVICE_IMAGE"
+        replace: "{{ rbac_service_image }}"
+
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "NODEMAILER_IMAGE"
+        replace: "{{ nodemailer_image }}"
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "MINIO_SERVICE_IMAGE"
+        replace: "{{ minio_service_image }}"
+
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "FILE_SERVICE_IMAGE"
+        replace: "{{ file_service_image }}"
+
+    
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "CREATE_SERVICE_IMAGE"
+        replace: "{{ create_service_image }}"
+
+   
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "CONTROL_SERVICE_IMAGE"
+        replace: "{{ control_service_image }}"
+
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/deployment.yaml
+        regexp: "AIRFLOW_SERVICE_IMAGE"
+        replace: "{{ airflow_service_image }}"
+  
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/pv.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+
+    - name: replace
+      replace:
+        path: /tmp/microservice/manifests/pv.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+
+
+
+    - name: Apply manifests
+      command: kubectl apply -f /tmp/microservice/manifests -n "{{ namespace }}"
+      ignore_errors: yes
+
+       
+
+
+

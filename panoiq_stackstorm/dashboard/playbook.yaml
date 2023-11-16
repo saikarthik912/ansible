@@ -1,0 +1,22 @@
+- name: Installing dashboard
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars:
+    namespace: "kubernetes-dashboard"
+  tasks:
+  
+
+    - name: copy directory
+      copy:
+        src: ../dashboard
+        dest: /tmp/
+     
+
+    - name: Run shell script
+      script: script.sh {{ namespace }}
+
+    - name: Run shell script
+      command: kubectl apply -f /tmp/dashboard/manifests/ -n {{ namespace }} 
+
+

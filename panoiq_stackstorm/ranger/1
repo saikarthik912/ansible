@@ -1,0 +1,103 @@
+!/bin/bash
+
+# Input parameters
+#read -p "Enter NFS private IP of server: " server_ip
+#read -p "Enter namespace: " namespace
+
+namespace=$1
+server_ip=$2
+image=$3
+secrets=$4
+
+# Ingress YAML file
+
+
+cat <<EOF > ranger-ingress.yml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ranger-ingress
+  namespace: $1
+#  annotations:
+#    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: ranger.passionbytes.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ranger-admin
+                port:
+                  number: 32448
+  ingressClassName: nginx
+EOF
+
+
+# Deployment YAML file
+
+cat <<EOF > ranger-deployment.yml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ranger-admin-server
+  namespace: $1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ranger-admin-server
+  template:
+    metadata:
+        labels:
+          app: ranger-admin-server
+    spec:
+      containers:
+        - name: ranger-admin-server
+          image: gitlab.passionbytes.io:5050/panoiq/tools:ranger-ansible
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 6080
+              protocol: TCP
+      imagePullSecrets:
+      - name: registry
+EOF
+
+
+
+# Service YAML file
+cat <<EOF > ranger-service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ranger-admim
+  namespace: $1
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 6080
+      nodePort: 32448 
+      protocol: TCP
+      targetPort: 6080
+  selector:
+    app: ranger-admin-server
+EOF
+
+
+
+echo "YAML files created successfully!"
+
+# kubernetes deployment
+
+sudo chmod 777 ranger-*
+
+kubectl create ns tools
+kubectl apply -f ranger-deployment.yml
+kubectl apply -f ranger-service.yml
+kubectl apply -f ranger-ingress.yml
+

@@ -1,0 +1,140 @@
+#!/bin/bash
+
+# Input parameters
+# read -p "Enter NFS private IP of server: " server_ip
+# read -p "Enter namespace: " namespace
+
+namespace=$1
+server_ip=$2
+image=$3
+secrets=$4
+
+# Generate PV YAML
+cat <<EOF > mongo-pv.yml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongo
+spec:
+  capacity:
+    storage: 7Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  #storageClassName: local-storage
+  claimRef:
+     namespace: $1
+     name: mongo
+  nfs:
+    path: /mnt/mongo
+    server: $2
+    readOnly: false
+EOF
+
+# Generate PVC YAML
+cat <<EOF > mongo-pvc.yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo
+  namespace: $1
+spec:
+  accessModes:
+  - ReadWriteMany
+ #storageClassName: local-storage    
+  resources:
+     requests:
+       storage: 5Gi
+EOF
+
+
+
+# Deployment YAML file
+cat <<EOF > mongo-deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+
+  labels:
+    app: mongodb
+  name: mongodb
+  namespace: $1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      securityContext:
+       runAsUser: 65534
+
+
+      containers:
+      - image: $3
+        name: mongodb
+        imagePullPolicy: IfNotPresent
+        args: ["--dbpath","/data/db"]
+
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: root
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: root
+
+        volumeMounts:
+        - name: "mongo-data-dir"
+          mountPath: "/data/db"
+
+
+    # initContainers:
+    # - name: fix-ownership
+    #    image: alpine:3.6
+    #    command: ["chown", "-R", "1000:100", "/data/"]
+
+
+      volumes:
+      - name: "mongo-data-dir"
+        persistentVolumeClaim:
+          claimName: "mongo"
+
+      imagePullSecrets:
+      - name: $4
+EOF
+
+
+# Service YAML file
+cat <<EOF > mongo-service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-svc
+  namespace: $1
+  labels:
+    app: mongo
+spec:
+  ports:
+  - name: mongo
+    port: 27017
+    targetPort: 27017
+  type: ClusterIP
+  selector:
+    app: mongodb
+EOF
+
+
+echo "YAML files created successfully!"
+
+whoiam
+sudo chmod 1777 ~/mongo*
+# kubernetes deployment
+
+kubectl apply -f ~/mongo-deployment.yml
+kubectl apply -f ~/mongo-service.yml
+kubectl apply -f ~/mongo-pv.yml
+kubectl apply -f ~/mongo-pvc.yml
+

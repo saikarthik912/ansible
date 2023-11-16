@@ -1,0 +1,20 @@
+- name: Ensure the destination directory exists
+  file:
+    path:  /home/ec2-user/.kube/
+    state: directory
+    mode: '0777'  # Set the appropriate permissions for the destination directory
+  when: not added_nodes
+
+- name: Join Master
+  command: sh /home/ec2-user/masterjoin.sh
+  when: not added_nodes
+
+- name: Copy files for admin.conf
+  command: sudo cp -r /etc/kubernetes/admin.conf /home/ec2-user/.kube/config
+  ignore_errors: no
+  when: not added_nodes
+
+- name: Change ownership
+  raw: |
+    sudo chown $(id -u):$(id -g) /home/ec2-user/.kube/config
+  when: not added_nodes  

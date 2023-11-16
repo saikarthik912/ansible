@@ -1,0 +1,8 @@
+configmap_reload_image_repository: jimmidyson/configmap-reload
+configmap_reload_image_tag: v0.8.0
+host: prometheus.passionbytes.io
+namespace: monitoring
+prometheus_image_repository: quay.io/prometheus/prometheus
+prometheus_image_tag: latest
+secret: registry
+server_ip: 172.31.19.79

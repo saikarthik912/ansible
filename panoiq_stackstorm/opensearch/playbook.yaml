@@ -1,0 +1,45 @@
+- name: Installing opensearch
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+   - vars.yaml
+  tasks:
+
+    - name: copy directory
+      copy:
+        src: ../opensearch
+        dest: /tmp/
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch/opensearch-pv.yml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch/opensearch-pv.yml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch/values.yaml
+        regexp: "OPENSEARCH_REPOSITORY"
+        replace: "{{ opensearch_repository }}"
+
+    - name: replace
+      replace:
+        path: /tmp/opensearch/values.yaml
+        regexp: "OPENSEARCH_TAG"
+        replace: "{{ opensearch_tag }}"
+
+    - name: Installing pv using opensearch-pv.yaml file
+      command: kubectl apply -f /tmp/opensearch/opensearch-pv.yml
+      ignore_errors: yes
+
+
+    - name: Installing opensearch using helm
+      command: helm install -f /tmp/opensearch/values.yaml opensearch  /tmp/opensearch/ -n {{ namespace }}
+      ignore_errors: yes

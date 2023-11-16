@@ -1,0 +1,12 @@
+- name: Copying kubeconfig
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  tasks:
+    - name: copy directory
+      fetch:
+        src: /home/ec2-user/kubeadm_init.txt
+        dest: /mnt/helm/
+        flat: yes
+      #with_items: "{{ kubeadm_init.txt }}" 
+               

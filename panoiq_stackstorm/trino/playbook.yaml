@@ -1,0 +1,112 @@
+- name: Installing trino
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+  - vars.yaml
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../trino 
+        dest: /tmp/
+
+    - name: Print the value of the variable
+      debug:
+        var: trino_image_tag
+    
+    - name: Copying kubeconfig
+      fetch:
+        src: /home/ec2-user/.kube/config
+        dest: /mnt/helm/kubeconfig.conf
+        flat: yes
+        recurse: yes
+
+    - name: replace
+      replace:
+        path: /tmp/trino/values.yaml
+        regexp: "TRINO_IMAGE_REPOSITORY"
+        replace: "{{ trino_image_repository }}"
+
+    - name: replace
+      replace:
+        path: /tmp/trino/values.yaml
+        regexp: "TRINO_IMAGE_TAG"
+        replace: "{{ trino_image_tag }}"
+
+    - name: replace
+      replace:
+        path: /tmp/trino/values.yaml
+        regexp: "IMAGE_SECRET"
+        replace: "{{ secret }}"
+
+    #- name: replace
+      #replace:
+        #path: /tmp/trino/pvc.yaml
+        #regexp: "NAMESPACE"
+        #replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/trino/manifests/pv.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+
+    - name: replace
+      replace:
+        path: /tmp/trino/manifests/pv.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    #- name: replace
+      #replace:
+        #path: /tmp/trino/trinopvc.yaml
+        #regexp: "NAMESPACE"
+        #replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/trino/manifests/trinopv.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/trino/manifests/trinopv.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+    
+    #- name: replace
+      #replace:
+        #path: /tmp/trino/values.yaml
+        #regexp: "HOST"
+        #replace: "{{ host }}"
+   
+    - name: replace
+      replace:
+        path: /tmp/trino/manifests/ingress.yaml
+        regexp: "HOST"
+        replace: "{{ host }}"
+ 
+
+
+    - name: add namespace
+      command: kubectl apply -f /tmp/trino/namespace.yaml
+      ignore_errors: yes
+
+
+
+        
+
+
+    - name: Deploy all manifests
+      command: kubectl apply -f /tmp/trino/manifests/  -n "{{ namespace }}"
+
+
+    - name: Installing trino using helm
+      command: helm install trino  /tmp/trino -n "{{ namespace }}"
+      ignore_errors: yes
+
+
+
+

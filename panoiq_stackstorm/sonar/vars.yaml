@@ -1,0 +1,6 @@
+namespace: "tools"
+host: "sonar.passionbytes.io"
+busybox_image: "busybox"
+sonar_image: "sonarqube:9.6-community"
+server: "172.31.19.79"
+

@@ -1,0 +1,7 @@
+---
+kubernetes_version: 1.20.0
+pod_network_cidr: 10.244.0.0/16
+master1_private_IP: 172.31.23.110
+ansible_user: ec2-user
+master1: 172.31.23.110
+added_nodes: false

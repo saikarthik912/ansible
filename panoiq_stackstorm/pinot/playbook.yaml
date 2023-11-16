@@ -1,0 +1,136 @@
+- name: Installing pinot
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+   - vars.yaml
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../pinot
+        dest: /tmp/
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/values.yaml
+        regexp: "PINOT_REPOSITORY"
+        replace: "{{ pinot_repository }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/values.yaml
+        regexp:  "IMAGE_SECRET"
+        replace: "{{ secret }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/values.yaml
+        regexp: "PINOT_TAG"
+        replace: "{{ pinot_tag }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/pv-minio.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/mounts/pv.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/mounts/pv.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/mounts/yaml-pv.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/mounts/yaml-pv.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/pv-minio.yaml 
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+    
+    - name: replace
+      replace:
+        path: /tmp/pinot/pv-zookeper.yaml 
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/pv-zookeper.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/pv-server.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/pv-server.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/pv-controller.yaml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/ingress.yaml
+        regexp: "HOST"
+        replace: "{{ host }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/pv-controller.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+    - name: replace
+      replace:
+        path: /tmp/pinot/ingress.yaml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+    - name: Installing pv using pv.yaml file
+      command: kubectl apply -f /tmp/pinot/mounts -n {{ namespace }}
+
+
+    - name: Installing pv using pv.yaml file
+      command: kubectl apply -f /tmp/pinot/pv-minio.yaml
+
+    - name: Installing pv using pv.yaml file
+      command: kubectl apply -f /tmp/pinot/pv-zookeper.yaml
+
+    - name: Installing pv using pv.yaml file
+      command: kubectl apply -f /tmp/pinot/pv-server.yaml
+
+    - name: Installing pv using pv.yaml file
+      command: kubectl apply -f /tmp/pinot/pv-controller.yaml
+
+    - name: Installing pinot using helm
+      command: helm install pinot /tmp/pinot -n {{ namespace }}
+
+    - name: Installing ingress using ingress.yaml file
+      command: kubectl apply -f /tmp/pinot/ingress.yaml -n {{ namespace }}

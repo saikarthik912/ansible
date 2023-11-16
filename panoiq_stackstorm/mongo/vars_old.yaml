@@ -1,0 +1,5 @@
+namespace: "tools"
+server_ip: "172.31.19.79"
+image: "mongo"
+secret: ""
+

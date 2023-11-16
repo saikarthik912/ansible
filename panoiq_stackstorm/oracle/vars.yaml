@@ -1,0 +1,5 @@
+namespace: "tools"
+server_ip: "172.31.19.79"
+image: "oracledb19c/oracle.19.3.0-ee:oracle19.3.0-ee"
+secret: ""
+

@@ -1,0 +1,118 @@
+- name: Installing kafka
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+   - vars.yaml
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../kafka 
+        dest: /tmp/
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/script.sh
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/script.sh
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}" 
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/values.yaml
+        regexp: "KAFKA_IMAGE_REGISTRY"
+        replace: "{{ kafka_image_registry }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/values.yaml
+        regexp: "KAFKA_IMAGE_REPOSITORY"
+        replace: "{{ kafka_image_repository }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/values.yaml
+        regexp: "KAFKA_IMAGE_TAG"
+        replace: "{{ kafka_image_tag }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/values.yaml
+        regexp: "KAFKA_KUBECTL_REGISTRY"
+        replace: "{{ kafka_kubectl_registry }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/values.yaml
+        regexp: "KAFKA_KUBECTL_REPOSITORY"
+        replace: "{{ kafka_kubectl_repository }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/values.yaml
+        regexp: "KAFKA_KUBECTL_TAG"
+        replace: "{{ kafka_kubectl_tag }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/values.yaml
+        regexp: "KAFKA_EXPORTER_REGISTRY"
+        replace: "{{ kafka_exporter_registry }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/values.yaml
+        regexp: "KAFKA_EXPORTER_REPOSITORY"
+        replace: "{{ kafka_exporter_repository }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/values.yaml
+        regexp: "KAFKA_EXPORTER_TAG"
+        replace: "{{ kafka_exporter_tag }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/values.yaml
+        regexp: "KAFKA_JMX_EXPORTER_REGISTRY"
+        replace: "{{ kafka_jmx_exporter_registry }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/values.yaml
+        regexp: "KAFKA_JMX_EXPORTER_REPOSITORY"
+        replace: "{{ kafka_jmx_exporter_repository }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/values.yaml
+        regexp: "KAFKA_JMX_EXPORTER_TAG"
+        replace: "{{ kafka_jmx_exporter_tag }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/pv.yml
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+    - name: replace
+      replace:
+        path: /tmp/kafka/pv.yml
+        regexp: "NAMESPACE"
+        replace: "{{ namespace }}"
+
+    - name: add namespace
+      command: kubectl apply -f /tmp/kafka/namespace.yaml
+      ignore_errors: yes
+
+
+    - name: create Volumes
+      command: kubectl apply -f /tmp/kafka/pv.yml
+
+    - name: Installing kafka using helm
+      command: helm install kafka  /tmp/kafka -n "{{ namespace }}"

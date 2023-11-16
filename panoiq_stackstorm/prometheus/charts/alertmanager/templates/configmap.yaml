@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prom-alertmanager
+  labels:
+    app.kubernetes.io/instance: prom
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/version: v0.25.0
+    helm.sh/chart: alertmanager-0.24.1  
+data:
+  alertmanager.yml: |-
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: [Alertname]
+      # Send all notifications to me.
+      receiver: email-me
+
+    receivers:
+    - name: email-me
+      email_configs:
+      - to: 'testerprometheus@gmail.com'
+        from: 'testerprometheus@gmail.com'
+        smarthost: "smtp.gmail.com:587"
+        auth_username: "testerprometheus@gmail.com"
+        auth_identity: "testerprometheus@gmail.com"
+        auth_password: "Op56-12=44"
+

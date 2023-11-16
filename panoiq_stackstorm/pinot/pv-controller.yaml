@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pinot-controller
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  claimRef:
+     namespace: "NAMESPACE"
+     name: data-pinot-controller-0 
+  nfs:
+    path: /mnt/pinot-controller
+    server: "SERVER_IP"
+    readOnly: false
+

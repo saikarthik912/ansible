@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonar
+  #namespace: "NAMESPACE"
+spec:
+  selector:
+    matchLabels:
+      name: sonar
+  replicas: 1
+  template:
+    metadata:
+      name: sonar
+      labels:
+        name: sonar
+    spec:
+      initContainers:
+        - name: set-vm-max-map-count
+          image: "BUSYBOX_IMAGE"
+          imagePullPolicy: Always
+          command: ['sysctl', '-w', 'vm.max_map_count=262144']
+          securityContext:
+            privileged: true
+           
+            # affinity:
+            #nodeAffinity:
+            #requiredDuringSchedulingIgnoredDuringExecution:
+            #nodeSelectorTerms:
+            #- matchExpressions:
+            #  - key: node
+            #   operator: In
+            #   values:
+            #   - worker1
+
+            
+      containers:
+        - image: "SONAR_IMAGE"
+          args:
+            # - -Dsonar.web.context=/
+            #- -Dsonar.security.realm=LDAP
+            #- -Dsonar.authenticator.downcase=true
+            #- -Dsonar.forceAuthentication=true
+            # - -Dldap.url=ldap://ldap-service:389
+            # - -Dldap.bindDn=cn=admin,dc=iauro,dc=com
+            # - -Dldap.bindPassword=root
+            # - -Dldap.user.baseDn=dc=iauro,dc=com
+            # # - -Dldap.user.request=(&(objectClass=user)(uid={login}))
+            # - -Dldap.user.request=uid={0}
+            # - -Dsonar.authenticator.createUsers=true
+            # - -Dldap.group.idAttribute=sAMAccountName
+            # - -Dldap.group.baseDn=cn=admin,dc=iauro,dc=com
+          name: sonar
+          env:
+            - name: SONAR_JDBC_PASSWORD
+              value: sonar
+              #valueFrom:
+              #  secretKeyRef:
+              #    name: postgres-pwd
+              #    key: password
+            - name: SONAR_JDBC_URL
+              value: jdbc:postgresql://postgres:5432/sonar              
+            - name: SONAR_JDBC_USERNAME
+              value: sonar
+          ports:
+            - containerPort: 32002
+              name: sonar
+
+

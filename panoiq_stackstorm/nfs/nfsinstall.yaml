@@ -1,0 +1,8 @@
+- name: Installing redis
+  hosts: localhost
+  become: yes
+  become_user: root
+  tasks:
+    - name: Run shell script
+      script: script.sh 
+

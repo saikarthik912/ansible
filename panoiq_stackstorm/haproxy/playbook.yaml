@@ -1,0 +1,76 @@
+- name: Installing haproxy
+  hosts: haproxy
+  become: yes
+  become_user: root
+  vars_files:
+   - vars.yaml
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../haproxy
+        dest: /tmp/
+         
+    - name: Permission to directory haproxy
+      command: sudo chmod -R  1777 /tmp/haproxy/
+
+
+
+    - name: Run config install script
+      command: /tmp/haproxy/script.sh
+      ignore_errors: yes
+
+    - name: replace
+      replace:
+        path: /tmp/haproxy/letsencrypt.sh
+        regexp: "LETSENCRYPT_CFG"
+        replace: "{{ letsencrypt_cfg }}" 
+
+    - name: replace
+      replace:
+        path: /tmp/haproxy/letsencrypt.sh
+        regexp: "LETSENCRYPT_DOMAIN"
+        replace: "{{ letsencrypt_domain }}"    
+
+    - name: replace
+      replace:
+        path: /tmp/haproxy/cfg_gen.sh
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+       
+    - name: replace
+      replace:
+        path: /tmp/haproxy/cfg_gen.sh
+        regexp: "INGRESS_HTTP_PORT"
+        replace: "{{ ingress_http_port }}"
+
+    - name: replace
+      replace:
+        path: /tmp/haproxy/cfg_gen.sh
+        regexp: "INGRESS_HTTPS_PORT"
+        replace: "{{ ingress_https_port }}"
+
+  
+    - name: Run config gen script
+      command: /tmp/haproxy/letsencrypt.sh
+      ignore_errors: yes
+     
+    
+
+    - name: Run config gen script
+      command: /tmp/haproxy/cfg_gen.sh passionbytes.io    {{ haproxy_cfg }}   
+      ignore_errors: yes
+       
+
+    - name: copy directory haproxy.cfg
+      command: sudo cp /tmp/haproxy/haproxy.cfg /etc/haproxy/
+
+    - name: copy directory rsyslog.conf
+      command: sudo cp /tmp/haproxy/rsyslog.conf /etc/
+
+    - name: copy directory rsyslog.d
+      command: sudo cp /tmp/haproxy/haproxy.conf /etc/rsyslog.d/
+
+
+    - name: copy restart haproxy
+      command: sudo systemctl restart haproxy
+

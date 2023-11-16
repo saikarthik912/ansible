@@ -1,0 +1,137 @@
+    - name: Get user information
+      command: whoami
+      register: user_info
+
+    - name: Print user information
+      debug:
+        var: user_info
+
+    - name: install nfs
+      command: sudo yum install nfs-utils rpcbind -y 
+      when: not added_nodes
+      ignore_errors: yes
+
+
+    - name: enable nfs
+      command: sudo systemctl enable nfs-server
+      when: not added_nodes
+      ignore_errors: yes
+
+    - name: enable rpc
+      command: sudo systemctl enable rpcbind
+      when: not added_nodes
+      ignore_errors: yes
+
+    - name: start nfs
+      command: sudo systemctl start rpcbind 
+      when: not added_nodes      
+      ignore_errors: yes
+
+    - name: start nfs
+      command: sudo systemctl start rpcbind
+      when: not added_nodes
+      ignore_errors: yes
+
+    - name: Remove old master join and worker join scripts
+      command: rm -rf /home/ec2-user/masterjoin.sh && rm -rf /home/ec2-user/workerjoin.sh
+      when: not added_nodes
+
+    - name: Add docker repository
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docer-ce.repo
+
+    - name: Install supported version of docker
+      ansible.builtin.package:
+        name: [docker-ce]
+        state: present
+
+    - name: Create other directories required
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - /etc/docker
+        - /etc/systemd/system/docker.service.d
+
+    - name: Set cgroup driver as systemd
+      ansible.builtin.template:
+        src: daemon.json.j2
+        dest: /etc/docker/daemon.json
+
+    - name: Start and enable docker service
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Install containerd
+      ansible.builtin.package:
+        name: [containerd.io]
+        state: installed
+
+    - name: Create containerd directories required
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - /etc/containerd
+
+    - name: Configure containerd
+      ansible.builtin.shell: containerd config default > /etc/containerd/config.toml && mv /etc/containerd/config.toml /etc/containerd/config.toml.bkp
+          #run_once: true
+
+    - name: Set cgroup driver as systemd
+      ansible.builtin.template:
+        src: daemon.json.j2
+        dest: /etc/docker/daemon.json
+
+    - name: Start and enable containerd service
+      ansible.builtin.systemd:
+        name: containerd
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Restart docker service
+      ansible.builtin.systemd:
+        name: docker
+        state: restarted
+        daemon_reload: yes
+
+    - name: Kubernetes yum repository
+      yum_repository:
+        name: kubernetes
+        description: Kubernetes Repository
+        baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+        enabled: yes
+        gpgcheck: yes
+        gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+    - name: Install Kubernetes components
+      package:
+        name: kubelet, kubeadm, kubectl
+        state: present
+
+    - name: Start and enable kubelet service
+      systemd:
+        name: kubelet
+        enabled: yes
+
+    - name: Reset Kubeadm
+      command: kubeadm reset -f
+      ignore_errors: yes
+      when: not added_nodes
+
+    - name: Remove .kube folder
+      command: rm -rf $HOME/.kube/config
+      args:
+        chdir: $HOME
+
+    - name: Remove old master join and worker join scripts
+      command: rm -rf /home/ec2-user/masterjoin.sh && rm -rf /home/ec2-user/workerjoin.sh
+
+    - name: Remove the kubernetes repository 
+      command: sudo rm /etc/yum.repos.d/kubernetes.repo      
+      ignore_errors: yes 

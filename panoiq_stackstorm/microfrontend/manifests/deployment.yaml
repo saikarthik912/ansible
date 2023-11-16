@@ -1,0 +1,304 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: panoiq-web-components
+  name: panoiq-web-components
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: panoiq-web-components
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: panoiq-web-components
+    spec:
+      containers:
+        - image: WEB_COMPONENTS_IMAGE
+          name: panoiq-web-components
+          imagePullPolicy: "Always"
+          ports:
+           - containerPort: 34002
+          env:
+            - name: NODE_ENV
+              value: development
+      imagePullSecrets:
+       - name: IMAGE_SECRET
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: panoiq-container-mfe
+  name: panoiq-container-mfe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: panoiq-container-mfe
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: panoiq-container-mfe
+    spec:
+      containers:
+        - image: CONTAINER_MFE_IMAGE
+          name: panoiq-container-mfe
+          imagePullPolicy: "Always"
+          ports:
+           - containerPort: 34001
+          env:
+            - name: NODE_ENV
+              value: development
+      imagePullSecrets:
+       - name: IMAGE_SECRET
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: panoiq-control-mfe
+  name: panoiq-control-mfe
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: panoiq-control-mfe
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: panoiq-control-mfe
+    spec:
+      containers:
+        - image: CONTROL_MFE_IMAGE
+          name: panoiq-control-mfe
+          imagePullPolicy: "Always"
+          ports:
+           - containerPort: 35001
+          env:
+            - name: NODE_ENV
+              value: development
+      imagePullSecrets:
+       - name: IMAGE_SECRET
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: panoiq-create-mfe
+  name: panoiq-create-mfe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: panoiq-create-mfe
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: panoiq-create-mfe
+    spec:
+      containers:
+        - image: CREATE_MFE_IMAGE
+          name: panoiq-create-mfe
+          imagePullPolicy: "Always"
+          ports:
+           - containerPort: 34003
+          env:
+            - name: NODE_ENV
+              value: development
+      imagePullSecrets:
+       - name: IMAGE_SECRET
+
+---
+  apiVersion: "apps/v1"
+  kind: "Deployment"
+  metadata: 
+    name: "panoiq-file-storage"
+  spec: 
+    selector: 
+      matchLabels: 
+        app: "panoiq-file-storage"
+    replicas: 1
+    strategy: 
+      type: "RollingUpdate"
+      rollingUpdate: 
+        maxSurge: 1
+        maxUnavailable: 1
+    minReadySeconds: 5
+    template: 
+      metadata: 
+        labels: 
+          app: "panoiq-file-storage"
+      spec: 
+        containers: 
+          - 
+            name: "panoiq-file-storage"
+            image: FILE_STORAGE_IMAGE
+            imagePullPolicy: "Always"
+            ports: 
+              - 
+                containerPort: 34000
+            volumeMounts:
+            - mountPath: /usr/local/apache2/htdocs
+              name: panoiq-file-storage
+              subPath: htdocs
+            env:
+            - name: NODE_ENV
+              value: development
+        volumes:
+          - name: panoiq-file-storage
+            persistentVolumeClaim:
+              claimName: pvc-panoiq-file-storage
+        imagePullSecrets:
+         - name: IMAGE_SECRET
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: web
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: web
+    template:
+        metadata:
+            labels:
+                app: web
+        spec:
+            containers:
+                - args:
+                      - ./querybook/scripts/bundled_docker_run_web
+                      - --initdb
+                  env:
+                      - name: PORT
+                        value: '10001'
+                      - name: FLASK_SECRET_KEY
+                        value: SOME_RANDOM_SECRET_KEY
+                      - name: DATABASE_CONN
+                        value: mysql+pymysql://test:passw0rd@mariadb.TOOLS_NAMESPACE:3306/querybook2?charset=utf8mb4
+                      - name: REDIS_URL
+                        value: redis://:panoiq@redis.TOOLS_NAMESPACE:6379/0
+                      - name: ELASTICSEARCH_HOST
+                        value: opensearch-cluster-master.TOOLS_NAMESPACE:9200
+                      - name: OAUTH_CLIENT_ID
+                        value: query5
+                      - name: OAUTH_CLIENT_SECRET
+                        value: query4
+                      - name: OAUTH_AUTHORIZATION_URL
+                        value: query3
+                      - name: OAUTH_TOKEN_URL
+                        value: query2
+                      - name: OAUTH_USER_PROFILE
+                        value: query1
+                      - name: ELASTICSEARCH_CONNECTION_TYPE
+                        value: naive
+                      - name: PUBLIC_URL
+                        value: https://testquerybook.passionbytes.io
+                  image: CONSUME_MFE_IMAGE
+                  name: web
+                  ports:
+                      - containerPort: 10001
+                  volumeMounts:
+                  - mountPath: /root/.certs
+                    name: certificates
+                  resources:
+                      requests:
+                          memory: '800Mi'
+                          cpu: '500m'
+                      limits:
+                          memory: '3Gi'
+                          cpu: '1'
+            volumes:
+            - name: certificates
+              persistentVolumeClaim:
+                claimName: discovery-lab-pvc
+            restartPolicy: Always
+            imagePullSecrets:     
+            - name: IMAGE_SECRET
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: worker
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: worker
+    template:
+        metadata:
+            labels:
+                app: worker
+        spec:
+            containers:
+                - args:
+                      - ./querybook/scripts/runservice
+                      - prod_worker
+                  image: CONSUME_MFE_IMAGE
+                  name: worker
+                  env:
+                      - name: FLASK_SECRET_KEY
+                        value: SOME_RANDOM_SECRET_KEY
+                      - name: DATABASE_CONN
+                        value: mysql+pymysql://test:passw0rd@mariadb.TOOLS_NAMESPACE:3306/querybook2?charset=utf8mb4
+                      - name: REDIS_URL
+                        value: redis://:panoiq@redis.TOOLS_NAMESPACE:6379/0
+                      - name: ELASTICSEARCH_HOST
+                        value: opensearch-cluster-master.TOOLS_NAMESPACE:9200
+            imagePullSecrets:
+            - name: IMAGE_SECRET
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: scheduler
+    namespace: development
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: scheduler
+    template:
+        metadata:
+            labels:
+                app: scheduler
+        spec:
+            containers:
+                - args:
+                      - ./querybook/scripts/runservice
+                      - prod_scheduler
+                      - --pidfile=/opt/celerybeat.pid
+                  image: CONSUME_MFE_IMAGE
+                  env:
+                      - name: FLASK_SECRET_KEY
+                        value: SOME_RANDOM_SECRET_KEY
+                      - name: DATABASE_CONN
+                        value: mysql+pymysql://test:passw0rd@mariadb.TOOLS_NAMESPACE:3306/querybook2?charset=utf8mb4
+                      - name: REDIS_URL
+                        value: redis://:panoiq@redis.TOOLS_NAMESPACE:6379/0
+                      - name: ELASTICSEARCH_HOST
+                        value: opensearch-cluster-master.TOOLS_NAMESPACE:9200
+                  name: scheduler
+                  #resources:
+                      #requests:
+                          #memory: '200Mi'
+                          #cpu: '100m'
+                      #limits:
+                          #memory: '200Mi'
+                          #cpu: '100m'
+            restartPolicy: Always
+            imagePullSecrets:
+            - name: IMAGE_SECRET
+

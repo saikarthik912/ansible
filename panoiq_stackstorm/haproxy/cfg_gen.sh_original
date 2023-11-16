@@ -1,0 +1,199 @@
+#!/bin/bash
+
+ 
+
+# Get user inputs for domain and tools
+
+ 
+
+#read -p "Enter domain: " domain
+domain="$1"
+#read -p "Enter tools separated by space: " tools_input
+
+ 
+
+# Split user inputs into arrays
+tools_input="$2"
+shift 2  # Remove the first two arguments (domain and tools)
+
+ 
+
+IFS=' ' read -ra tools <<< "$tools_input"
+
+ 
+
+# Get user inputs
+#read -p "Enter backend server information (backend server name IP:Port) separated by space: " servers_input
+servers_input=("$@")
+# Split user inputs into arrays
+IFS='\ ' read -ra servers <<< "${servers_input[@]}"
+#IFS='\' read -ra servers <<< "$(echo "$servers_input" | tr '\\' ' ')"
+
+ 
+
+ 
+
+ 
+
+# Create HAProxy configuration file
+cat <<EOF > /tmp/haproxy/haproxy.cfg
+#---------------------------------------------------------------------
+# Example configuration for a possible web application.  See the
+# full configuration options online.
+#
+#   https://www.haproxy.org/download/1.8/doc/configuration.txt
+#
+#---------------------------------------------------------------------
+
+ 
+
+# Global settings
+# ... (same as before)
+
+ 
+
+# Common defaults
+# ... (same as before)
+global
+    # to have these messages end up in /var/log/haproxy.log you will
+    # need to:
+    #
+    # 1) configure syslog to accept network log events.  This is done
+    #    by adding the '-r' option to the SYSLOGD_OPTIONS in
+    #    /etc/sysconfig/syslog
+    #
+    # 2) configure local2 events to go to the /var/log/haproxy.log
+    #   file. A line like the following can be added to
+    #   /etc/sysconfig/syslog
+    #
+    #    local2.*                       /var/log/haproxy.log
+    #
+    log         127.0.0.1 local2
+
+ 
+
+ 
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     8192
+    user        haproxy
+    group       haproxy
+    daemon
+
+ 
+
+    tune.ssl.default-dh-param 2048
+
+ 
+
+ 
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+ 
+
+ 
+
+    # utilize system-wide crypto-policies
+    ssl-default-bind-ciphers PROFILE=SYSTEM
+    ssl-default-server-ciphers PROFILE=SYSTEM
+
+ 
+
+ 
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    20s
+    timeout queue           5s
+    timeout connect         5s
+    timeout client          100s
+    timeout server          100s
+    timeout http-keep-alive 100s
+    timeout check           20s
+    timeout tunnel          5m
+    timeout client-fin      10s
+    timeout server-fin      10s
+    maxconn                 8192
+
+ 
+
+ 
+
+#---------------------------------------------------------------------
+# main frontend which proxys to the backends
+#---------------------------------------------------------------------
+frontend www-http
+    bind *:80
+    reqadd X-Forwarded-Proto:\ http
+    option http-server-close
+    option forwardfor
+    stats uri /haproxy?stats
+
+ 
+
+ 
+
+$(for tool in "${tools[@]}"; do
+    echo "    acl ${tool}_server hdr(host) -i ${tool}.${domain}"
+    echo "    use_backend ${tool}-backend if ${tool}_server"
+done)
+
+ 
+
+ 
+
+frontend www-https
+    bind *:443 ssl crt /etc/haproxy/certs/test.passionbytes.io.pem
+    option http-server-close
+    option forwardfor
+    reqadd X-Forwarded-Proto:\ https
+    acl letsencrypt-acl path_beg /.well-known/acme-challenge/
+    use_backend letsencrypt-backend if letsencrypt-acl
+
+ 
+
+ 
+
+$(for tool in "${tools[@]}"; do
+    echo "    acl ${tool}_server hdr(host) -i ${tool}.${domain}"
+    echo "    use_backend ${tool}-backend if ${tool}_server"
+done)
+# ...
+
+ 
+
+ 
+
+ 
+
+$(for (( i=0; i<${#servers[@]}; i+=3 )); do
+    backend_name="${servers[i]}-backend"
+    server_name="${servers[i]}"
+    server_address="${servers[i+1]}:${servers[i+2]}"
+
+ 
+
+    echo ""
+    echo "backend ${backend_name}"
+    echo "    mode http"
+    echo "    balance roundrobin"
+    echo "    server ${server_name} ${server_address} check"
+done)
+EOF
+
+echo "Dynamic HAProxy configuration script generated as 'dynamic-haproxy.cfg'."
+

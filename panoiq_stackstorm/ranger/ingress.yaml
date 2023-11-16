@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ranger-ingress
+  namespace: development
+#  annotations:
+#    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: ranger.passionbytes.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ranger-admin
+                port:
+                  number: 32448
+  ingressClassName: nginx
+

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfspv-prometheus
+spec:
+  capacity:
+    storage: 7Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  #storageClassName: local-storage
+  claimRef:
+     namespace: test
+     name: nfspvc-prometheus
+  nfs:
+    path: /mnt/prometheus
+    server: test
+    readOnly: false

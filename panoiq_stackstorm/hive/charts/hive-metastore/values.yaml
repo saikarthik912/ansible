@@ -1,0 +1,24 @@
+# The base hadoop image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+postgresql:
+  enabled: true
+  host: ~
+  port: 5432
+  auth:
+    postgresPassword: "postgres"
+    database: "HIVE_DATABASE"
+    username: "HIVE_USERNAME"
+    password: "HIVE_PASSWORD"
+
+image:
+  repository: "HIVE_IMAGE_REPOSITORY"
+  tag: "HIVE_IMAGE_TAG"
+  secret: "HIVE_IMAGE_SECRET"
+#  pullPolicy: Always
+
+resources: { }
+conf:
+  hiveSite: {}
+    # if not set, default hive.metastore.warehouse.dir is default to: "hdfs://{{.Release.Name}}-hdfs:8020/user/hive/warehouse"
+    # hive.metastore.warehouse.dir: hdfs://my-hdfs.bigdata.svc.cluster.local:9820/user/hive/warehouse
+    # hive.metastore.schema.verification: false

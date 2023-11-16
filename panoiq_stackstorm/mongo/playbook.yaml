@@ -1,0 +1,33 @@
+- name: Installing mongo
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+    - vars.yaml 
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../mongo
+        dest: /tmp/
+
+    - name: add namespace
+      command: kubectl apply -f /tmp/mongo/namespace.yaml
+      ignore_errors: yes
+
+    - name: Run shell script
+      script: script.sh {{ namespace }} {{ server_ip }} {{ image }} {{ secret }}
+
+    - name: Apply Manifests
+      command: kubectl apply -f /tmp/mongo/manifests/ -n {{ namespace }}
+
+    - name: replace
+      replace:
+        path: /tmp/mongo/mongo.sh
+        regexp: "SERVER_IP"
+        replace: "{{ server_ip }}"
+
+    - name: Wait for a port to become available
+      command: sleep 60
+
+    - name: Run shell script for adding icons
+      script: ./mongo.sh      

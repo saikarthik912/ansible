@@ -1,0 +1,23 @@
+- name: Installing ranger
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+    - vars.yaml
+  tasks:
+    - name: copy directory
+      copy:
+        src: ../ranger
+        dest: /tmp/
+
+    - name: Run shell script
+      script: script.sh {{ namespace }} {{ server_ip }} {{ image }} {{ secret }} {{ host }}
+
+
+    - name: Applying Manifests
+      command: kubectl apply -f /tmp/ranger/manifests -n  {{ namespace }}
+      ignore_errors: yes
+
+      #    - name: Run shell script
+      #script: script.sh {{ namespace }} {{ server_ip }} {{ image }} {{ secret }}
+

@@ -1,0 +1,18 @@
+- name: Installing grafana
+  hosts: master1
+  become: yes
+  become_user: ec2-user
+  vars_files:
+    - vars.yaml
+  tasks:     
+    - name: copy directory
+      copy:
+        src: ../grafana
+        dest: /tmp/
+
+
+    - name: Run shell script
+      script: script.sh {{ namespace }} {{ server_ip }} {{ image }} {{ secret }}
+
+    - name: Apply Manifests
+      command: kubectl apply -f /tmp/grafana/manifests/ -n {{ namespace }}
